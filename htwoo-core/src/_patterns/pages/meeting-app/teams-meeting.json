@@ -1,0 +1,85 @@
+{
+    "events": [
+        {
+            "date": "07/4/2021 - 8:00pm - 10:00pm",
+            "title": "Independence Day",
+            "persons": "3 attendees"
+        },
+        {
+            "date": "06/4/2021 8:00pm - 10:00pm",
+            "title": "SPFx Teams Samples",
+            "persons": "6 attendees"
+        },
+        {
+            "date": "06/4/2021",
+            "title": "COVID Training",
+            "persons": "8 attendees"
+        },
+        {
+            "date": "06/4/2021",
+            "title": "Dev Kitchen",
+            "persons": "10 attendees"
+        },
+        {
+            "date": "06/4/2021",
+            "title": "SPFx engeneering meeting",
+            "persons": "2 attendees"
+        },
+        {
+            "date": "06/4/2021",
+            "title": "Webpack upgrade pair coding",
+            "persons": "2 attendees"
+        },
+        {
+            "date": "06/4/2021",
+            "title": "Marketing Lannch Planning",
+            "persons": "3 attendees"
+        }
+    ],
+    "meetingrooms": [
+        {
+            "card-title": "Atlantic",
+            "card-location": "Microsoft HQ",
+            "card-image-url": "../../images/card-images/meeting-cards/card-1.jpg"
+        },
+        {
+            "card-title": "Pacific",
+            "card-location": "Microsoft HQ",
+            "card-image-url": "../../images/card-images/meeting-cards/card-2.jpg"
+        },
+        {
+            "card-title": "Indian Ocean",
+            "card-location": "Microsoft HQ",
+            "card-image-url": "../../images/card-images/meeting-cards/card-3.jpg"
+        },
+        {
+            "card-title": "Souther Ocean",
+            "card-location": "Microsoft HQ",
+            "card-image-url": "../../images/card-images/meeting-cards/card-4.jpg"
+        },
+        {
+            "card-title": "Arctic Ocean",
+            "card-location": "Microsoft HQ",
+            "card-image-url": "../../images/card-images/meeting-cards/card-5.jpg"
+        },
+        {
+            "card-title": "Arctic Ocean",
+            "card-location": "Microsoft HQ",
+            "card-image-url": "../../images/card-images/meeting-cards/card-6.jpg"
+        }
+    ],
+    "actions": [
+        {
+            "label": "Show Map"
+        },
+        {
+            "label": "Plan you trip"
+        },
+        {
+            "label": "Fill out Covid Form"
+        }
+    ],
+    "meetingRoomCloseUp": "../../images/card-images/meeting-cards/card-4.jpg",
+    "floorplan": "../../images/card-images/meeting-cards/floorplan.jpg"
+
+}

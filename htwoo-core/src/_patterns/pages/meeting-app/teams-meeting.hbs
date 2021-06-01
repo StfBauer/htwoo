@@ -1,0 +1,64 @@
+<div class="meeting-grid">
+    <h2 class="meeting-headline">Your upcoming meetings:</h2>
+    <ul class="meeting-datelist">
+        {{#each events }}
+        <li class="meeting-date">
+            <div class="date-details">
+                <div class="date-day">{{date}}</div>
+                <div class="date-title">{{title}}</div>
+                <div class="date-persons">{{persons}}</div>
+            </div>
+        </li>
+        {{/each}}
+    </ul>
+    <div class="meeting-stage">
+        <h2 class="meeting-headline">Available Meeting Rooms</h2>
+        <div class="meeting-room-selector">
+            <div class="meeting-rooms">
+                {{#each meetingrooms }}
+                {{> organism-meeting-room-card this }}
+                {{/each}}
+            </div>
+        </div>
+        <div class="meetingroom-selection">
+            <div class="meetingroom-closeup">
+                <img src="{{ meetingRoomCloseUp }}" alt="" class="meetingroom-closeup-img">
+            </div>
+            <div class="meetingroom-floorplan">
+                <img src="{{ floorplan }}" alt="" class="meetingroom-closeup-img">
+            </div>
+            <div class="meetingroom-info">
+                <h2 class="meetingroom-name">Southern Ocean</h2>
+                <address class="meetingroon-address">
+                    <strong>Microsoft HQ</strong><br>
+                    One Microsoft Way, Redmond,<br>
+                    WA 98052, United States<br>
+                    <div class="meetingroom-phone">
+                        <strong>Phone:</strong> <a href="tel://+1 425-882-8080">+1 425-882-8080</a>
+                    </div>
+                </address>
+                <div class="meetingroom-actions">
+                    {{#each actions }}
+                    <div class="meetingroom-action">
+                        {{> atoms-button-standard label=this.label }}
+                    </div>
+                    {{/each}}
+                </div>
+                <div class="meetingroom-map">
+                    <iframe frameborder="0"
+                        src="https://www.bing.com/maps/embed?h=450&w=800&cp=47.639481407051086~-122.1458888053894&lvl=14&typ=d&sty=r&src=SHELL&FORM=MBEDV8"
+                        scrolling="no">
+                    </iframe>
+                    <div style="white-space: nowrap; text-align: center; width: 800px; padding: 6px 0;">
+                        <a id="largeMapLink" target="_blank"
+                            href="https://www.bing.com/maps?cp=47.639481407051086~-122.1458888053894&amp;sty=r&amp;lvl=14&amp;FORM=MBEDLD">View
+                            Larger Map</a> &nbsp; | &nbsp;
+                        <a id="dirMapLink" target="_blank"
+                            href="https://www.bing.com/maps/directions?cp=47.639481407051086~-122.1458888053894&amp;sty=r&amp;lvl=14&amp;rtp=~pos.47.639481407051086_-122.1458888053894____&amp;FORM=MBEDLD">Get
+                            Directions</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
