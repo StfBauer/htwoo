@@ -1,0 +1,35 @@
+<article class="hoo-srchcard">
+    <header class="hoo-srchcard-header">
+        <div class="hoo-srchcard-icon">icon</div>
+        <h3 class="hoo-srchcard-title">This is just a random title</h3>
+        <p class="hoo-srchcard-info">modified by Stefan Bauer by yesterday</p>
+    </header>
+    <p class="hoo-srchcard-desc">
+        Lorem ipsum dolor sit, amet consectetur adipisicing elit. Itaque, rem amet. Voluptas exercitationem veniam
+        facilis aliquid expedita dolor illo quam. Suscipit tempora adipisci beatae laborum enim corporis numquam.
+        Asperiores obcaecati facilis accusamus eum veniam nisi alias sequi impedit dolor quisquam nostrum optio
+        molestias minima aut dolorem eveniet, provident debitis hic?
+    </p>
+    {{> molecules-tag-list-link}}
+    <button class="hoo-srchcard-btn" type="button" popovertarget="preview-1">
+        <figure class="hoo-srchcard-thumb" aria-hidden="true">
+            <img src="http://placehold.co/320x180" class="hoo-srchcard-img" alt="This is just a random image">
+        </figure>
+    </button>
+</article>
+<dialog class="template--listItem--thumbnailContainer hoo-srchcard-popover" data-selection-disabled="true" id="preview-1" popover>
+    <div class="thumbnail--image">
+        <pnp-filepreview>
+            <pnp-img alt='preview-image' width="320" height="180" loading="lazy" />
+        </pnp-filepreview>
+        <div class="thumbnail--hover">
+            <div>
+                <pnp-icon data-name="DocumentSearch" aria-hidden="true"></pnp-icon>
+                hello world
+            </div>
+
+        </div>
+
+    </div>
+
+</dialog>
