@@ -1,0 +1,5 @@
+{
+    "name": "htwoo",
+    "version": "2.7.0",
+    "workspaces": ["htwoo-core"]
+}
