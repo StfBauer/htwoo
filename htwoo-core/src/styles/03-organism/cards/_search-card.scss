@@ -1,5 +1,10 @@
 @use '../../00-base/colors/colors' as dt;
 
+.hoo-srchcard-link{
+    color: currentColor;
+    text-decoration: none;
+}
+
 .hoo-srchcard{
     box-sizing: border-box;
     display: flex;
