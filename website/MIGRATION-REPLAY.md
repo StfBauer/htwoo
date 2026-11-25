@@ -248,6 +248,121 @@ Raw HTML outside code fences: `changelog/htwoo-core-cl.md` 30 lines, `_index.md`
   `website/MIGRATION-REPLAY.md`. Logs only, separate from any work.
 - Check: `git show --stat HEAD` lists the two files only; `git diff 2297b8114 HEAD --stat` = 2 files.
 
+## Phase 1: the theme onto Pattern Dump (htwoo-theme, `pd`)
+
+Decisions of 2026-11-25 applied: F-01/F-03 and F-02 become PD features (Phase 3 waits); F-04 the home
+markup into the theme; F-07 supporters from `site.globals`; F-05, F-06 dropped; F-08 `<base>` and keywords
+dropped, `nofollow` reported (F-08); F-20 unused parts dropped; htwoo-core CSS from npm 2.9.2 when a part
+needs it (no theme part does yet, so the theme has no htwoo-core dependency); ownership §0.10 accepted
+with one correction: `header-img.jpg` is the website's (the theme's copy differs and nothing references
+it), so it was dropped from the theme.
+
+Environment: Node 24.22.3, npm 11.19.1, PD 0.9.0 (exact), esbuild 0.28.2 (PD's), TypeScript 5.9.3,
+swup 4.8.1, `@swup/a11y-plugin` 5.0.0 (docs-branch lockfile), `@swup/head-plugin` 2.3.1.
+
+Check for every commit below (`<baseline>/scripts/verify-theme.sh 2a8010a 837a705`): clean clone of T,
+checkout, `npm ci`, `npm run build` (helpers, then `pd build`): all exit 0, component counts as listed.
+HEAD also: `npm run typecheck` 0, `npm run audit` 0 defects across 15 components, no path outside the
+package referenced. Sass and Hugo templates moved with `git mv`, so `git log --follow` reaches their Hugo
+history where git detects the rename.
+
+### 1.1 `7c01b62` feat(skin): Add the page frame as a Pattern Dump pattern package (htwoo-theme)
+
+- `package.json` (`@n8d/htwoo-theme`, private, `patternDump` field, `allowScripts` for esbuild and
+  `@parcel/watcher` as PD's starter has), `pattern-dump.config.ts` (workbench only: `outDir`, brand),
+  `tsconfig.json`, `themes/htwoo.theme.scss` (the workbench's preview theme), `.gitignore`.
+- `helpers/index.ts` → `dist/helpers.js` (esbuild, `prepare`): `hoo-inline-svg`, `hoo-is-external`.
+- `partials/base`, `partials/header`, `partials/nav` (from `baseof.html`, `header.html`, `nav/main.html`);
+  `src/styles/document/` base layer (tokens, type scale, typography, code colours, `.t-general`, document
+  rules of `main.scss`), `partials/{base,header,nav}.scss`; `src/scripts/site.ts` (from `main.ts`, with
+  `@swup/head-plugin`, F-28).
+- Check: build 3 components; screenshot of the `partials/base` preview matches the live header and menu
+  (`<baseline>/phase1/shots/preview_partials_base--desktop.png`); stylesheet order nav, header, frame as in
+  the Hugo bundle; `site.js` bundles swup and both plugins.
+
+### 1.2 `eeedb1a` feat(skin): Add the page layout (htwoo-theme)
+
+- `layouts/page` (from `_default/single.html`), prose image slot.
+- Check: build 4 components; `preview_layouts_page--desktop.png` shows the live content-page typography.
+
+### 1.3 `8662be6` feat(skin): Add the listing layout with its list view (htwoo-theme)
+
+- `layouts/listing` (from `_default/list.html`), `views/list`, `components/list-card` (F-30: title only).
+- Check: build 7 components.
+
+### 1.4 `ac96b3f` feat(skin): Add the home layout with the cover and supporters (htwoo-theme)
+
+- `layouts/home` (from `index.html`), `components/cover` (from `partials/cover-image.html`),
+  `components/supporter`, `components/supporters` (+ `~quick`, from `shortcodes/sponsors.html`),
+  `components/{cover,supporters,supporter}.scss` (from `03-organism/_cover.scss`, `_sponsors.scss`);
+  generated sample assets (`assets/htwoo-theme/samples/cover.jpg`, `logo.svg`).
+- Check: build 11 components; `preview_layouts_home--desktop.png`: cover with heading, landing text,
+  "Supported by:" grid as on the live home page.
+
+### 1.5 `c6f3f99` feat(skin): Add the supporters layout (htwoo-theme)
+
+- `layouts/supporters` (from `supporters/list.html`), inner `<main>` removed (F-29).
+- Check: build 12 components; `<baseline>/phase1/dev/layouts_supporters.png`.
+
+### 1.6 `b8976a1` feat(skin): Add the figure component (htwoo-theme)
+
+- `components/figure` (from `shortcodes/figure.html`), markdown caption as `x-pd-content`, `alt` required.
+- Check: build 13 components.
+
+### 1.7 `66820b9` feat(skin): Add the head partial and the files served at the site root (htwoo-theme)
+
+- `partials/head` (from `partials/head.html`): icons, manifest, typography.com stylesheet.
+- `site-root/`: `favicon.ico`, `favicon-16x16.png`, `favicon-32x32.png`, `apple-touch-icon.png`,
+  `android-chrome-192x192.png`, `android-chrome-512x512.png`, `site.webmanifest`, `889032/` (58 files),
+  copied from htwoo docs `bc889ced5` `static/` (`git archive`; cross-repo, so no history). The htwoo side
+  removes them in Phase 2. To be mounted at `/` by the website (F-01/F-03).
+- Check: build 14 components; `site-root/` files byte-identical to docs `bc889ced5` (`git archive` source).
+
+### 1.8 `e934224` refactor(skin): Remove the Hugo theme (htwoo-theme)
+
+- `git rm` of `layouts/`, `assets/sass/` leftovers, `assets/js/`, `assets/github/`, `static/`, `archetypes/`,
+  `theme.yaml`; new `README.md`. Dropped list: F-20.
+- Check: build 14 components; `git ls-files` has no `layouts/` outside `src/patterns/`, no `static/`,
+  `archetypes/`, `theme.yaml`; no Hugo template syntax in any `.hbs`; "Hugo" appears only in provenance
+  comments and docs.
+
+### 1.9 `837a705` style(skin): Mark the cover image selector as a Pattern Dump workaround (htwoo-theme)
+
+- `PD-WORKAROUND: F-27` comment on `.o-cover img`.
+- Check: build 14 components.
+
+### 1.10 Workbench without htwoo (Acceptance 3)
+
+- `pd dev --port 4411` in the clean clone of T at `e934224` (no htwoo checkout anywhere in the path); every
+  component preview loaded in Chromium (`<baseline>/scripts/dev-shots.cjs`, report and screenshots in
+  `<baseline>/phase1/dev/`): 14 components and the `supporters~quick` variant, all 200, each with its
+  stylesheets and (where required) `site.js`; no failed request. The one console 404 on previews is the
+  browser's own `/favicon.ico` (the workbench doesn't serve `site-root/`; the website will).
+
+| Hugo part in use (theme `2a8010a`, docs `bc889ced5`) | Pattern Dump (theme `837a705`) |
+|---|---|
+| `layouts/_default/baseof.html` | `partials/base` |
+| `layouts/_default/single.html` | `layouts/page` |
+| `layouts/_default/list.html` | `layouts/listing` + `views/list` + `components/list-card` |
+| `layouts/index.html` | `layouts/home` |
+| `layouts/supporters/list.html` | `layouts/supporters` |
+| `layouts/partials/head.html` | `partials/head` (+ PD's own head) |
+| `layouts/partials/header.html` | `partials/header` |
+| `layouts/partials/nav/main.html` | `partials/nav` |
+| `layouts/partials/cover-image.html` | `components/cover` |
+| `layouts/partials/scripts.html` + `assets/js/main.ts` | `src/scripts/site.ts` (`requireScript: site` on `partials/base`) |
+| `layouts/partials/ga.html`, `ahrefs.html` | the website's `site.head` (Phase 2) |
+| `layouts/shortcodes/figure.html` | `components/figure` |
+| `layouts/shortcodes/sponsors.html` | `components/supporters~quick` + `components/supporter` |
+| `assets/sass/**` in use | `src/styles/document/`, `partials/`, `components/` |
+| `static/img/htwoo-logo.svg` | `assets/htwoo-theme/htwoo-logo.svg` (inlined by `hoo-inline-svg`) |
+
+### 1.11 Logs (htwoo, `pd-migration`)
+
+- `docs(website): Update the migration logs for phase 1`: findings F-26 to F-30, decisions and Phase 1
+  outcomes on F-01 to F-08 and F-20, this section.
+- Check: `git show --stat HEAD` lists the two logs only.
+
 ## Appendix: baseline URL lists (Node 20 build at the base SHAs)
 
 Every live 200 URL is in this build (0.3). Route lists below; `/htwoo-core/`, `/htwoo-react/` and the

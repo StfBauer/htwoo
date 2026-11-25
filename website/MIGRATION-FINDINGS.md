@@ -11,14 +11,14 @@ the rehearsal setup.
 
 | ID | Tag | Repo | Title | Status |
 |---|---|---|---|---|
-| F-01 | [PD-GAP] | htwoo | Site config can't place another tool's build output at a site path | open, **stop** |
-| F-02 | [PD-GAP] | htwoo | Site pages can't come from markdown outside `pagesDir` (package changelogs) | open, **stop** |
-| F-03 | [PD-GAP] | htwoo | Root-level static files can't be served at their paths (`/889032/`, favicons, manifest) | open |
-| F-04 | [PD-GAP] | htwoo | Raw HTML in page markdown is shown as text (Hugo renders it: `unsafe: true`) | open |
-| F-05 | [PD-GAP] | htwoo | Sitemap file names and the sitemap index are fixed (`/sitemap-pages.xml`, `/components-sitemap.xml`) | open |
-| F-06 | [PD-GAP] | htwoo | No RSS feeds: 48 `index.xml` URLs have no equivalent | open |
-| F-07 | [PD-GAP] | theme | Listing entries can't carry a page's own fields (supporters' `logo`, `link`) | open |
-| F-08 | [PD-GAP] | theme | Head items with no equivalent: `<base href>`, `meta keywords`, robots `nofollow` | open |
+| F-01 | [PD-GAP] | htwoo | Site config can't place another tool's build output at a site path | open: PD feature (Stefan), Phase 3 waits |
+| F-02 | [PD-GAP] | htwoo | Site pages can't come from markdown outside `pagesDir` (package changelogs) | open: PD feature (Stefan), after F-01 |
+| F-03 | [PD-GAP] | htwoo | Root-level static files can't be served at their paths (`/889032/`, favicons, manifest) | open: same PD feature as F-01 |
+| F-04 | [PD-GAP] | htwoo | Raw HTML in page markdown is shown as text (Hugo renders it: `unsafe: true`) | workaround: home markup in the theme (Phase 1); content in Phase 2 |
+| F-05 | [PD-GAP] | htwoo | Sitemap file names and the sitemap index are fixed (`/sitemap-pages.xml`, `/components-sitemap.xml`) | won't fix: dropped, PD's `/sitemap.xml` kept (decision 3) |
+| F-06 | [PD-GAP] | htwoo | No RSS feeds: 48 `index.xml` URLs have no equivalent | won't fix: dropped (decision 3) |
+| F-07 | [PD-GAP] | theme | Listing entries can't carry a page's own fields (supporters' `logo`, `link`) | workaround: `site.globals.supporters` (decision 2) |
+| F-08 | [PD-GAP] | theme | Head items with no equivalent: `<base href>`, `meta keywords`, robots `nofollow` | `<base>`, keywords dropped; `nofollow` reported, awaiting decision |
 | F-09 | [SUBJECT-DEBT] | htwoo | `build:package` of htwoo-core is broken at the base SHA | open |
 | F-10 | [SUBJECT-DEBT] | htwoo | Nx ignores the `project.json` targets: root `nx run …` scripts fail | open |
 | F-11 | [SUBJECT-DEBT] | htwoo | Unit tests fail at the base SHA; htwoo-react has no runnable test target | open |
@@ -30,19 +30,24 @@ the rehearsal setup.
 | F-17 | [SUBJECT-DEBT] | htwoo | `components-sitemap.xml` leaves out 35 section pages | open |
 | F-18 | [SUBJECT-DEBT] | htwoo | Website changelog copies are stale and hold entries the package changelogs lack | open |
 | F-19 | [SUBJECT-DEBT] | htwoo | Changelog and release automation partly broken (record only) | open |
-| F-20 | [SUBJECT-DEBT] | theme | Unused or empty theme parts (media, YouTube, cards, footer, general, 404) | open |
+| F-20 | [SUBJECT-DEBT] | theme | Unused or empty theme parts (media, YouTube, cards, footer, general, 404) | fixed in theme: dropped (decision 4) |
 | F-21 | [SUBJECT-DEBT] | htwoo | `docs/ver/` is 979 tracked files of 2021 style guide snapshots, not served | open |
 | F-22 | [SUBJECT-DEBT] | htwoo | Front matter that Hugo ignored or that PD will refuse | open |
 | F-23 | [FORK-ONLY] | htwoo | typography.com refuses the fork's host: brand fonts don't load on `stfbauer.github.io` | open |
 | F-24 | [FORK-ONLY] | htwoo | Under the `/htwoo/` base path PD writes no `robots.txt` | open |
-| F-25 | [FORK-ONLY] | htwoo, theme | Fork setup gaps: Pages environment allows `main` only; `HTWOO_DISPATCH_TOKEN` missing | open |
+| F-25 | [FORK-ONLY] | htwoo, theme | Fork setup gaps: Pages environment allows `main` only; `HTWOO_DISPATCH_TOKEN` missing | open: Stefan, before Phase 4 |
+| F-26 | [PD-GAP] | htwoo, theme | A navigation entry can't be a page with children, nor list a folder's pages | open |
+| F-27 | [PD-GAP] | theme | `{{pd-image}}` takes no `class` | workaround (`PD-WORKAROUND: F-27`) |
+| F-28 | [SUBJECT-DEBT] | theme | swup page transitions assume one stylesheet for every page | fixed in theme; verify in Phase 2 |
+| F-29 | [SUBJECT-DEBT] | theme | Accessibility defects PD's build would refuse: unnamed logo and supporter links, nested `<main>` | fixed in theme |
+| F-30 | [SUBJECT-DEBT] | theme | Visual differences the skin introduces on purpose or by PD's markup | open: confirm in Phase 2 screenshots |
 
 ---
 
 ### F-01 [PD-GAP] Site config can't place another tool's build output at a site path
 
-- Status: open. Stop: Stefan decides between a PD feature first or a marked workaround (copy step in the
-  workflow, `PD-WORKAROUND: F-01`).
+- Status: open. Decided 2026-11-25: a PD feature (mount a folder at a route, `/` included), built by
+  Stefan in PD, covering F-03 too. Phase 3 waits for it.
 - Phase: 0
 - Repo and commit: htwoo `2297b8114` (spike outside the repo), PD 0.9.0, Node 24.22.3, macOS 27.2.1
 - Where: the site config `website/pattern-dump.config.ts` (planned); targets `/htwoo-core/`, `/htwoo-react/`,
@@ -79,8 +84,8 @@ the rehearsal setup.
 
 ### F-02 [PD-GAP] Site pages can't come from markdown outside `pagesDir`
 
-- Status: open. Stop (Decisions: "If PD can't read markdown from outside `website/`, that's a `[PD-GAP]` and
-  a stop").
+- Status: open. Decided 2026-11-25: a PD feature after F-01 (pages from markdown outside `pages/`, title
+  from the config, heading offset), built by Stefan.
 - Phase: 0
 - Repo and commit: htwoo `2297b8114`, PD 0.9.0, Node 24.22.3, macOS
 - Where: changelog pages, from `htwoo-core/CHANGELOG.md` and `REACT-CHANGELOG.md`
@@ -120,6 +125,10 @@ the rehearsal setup.
 - Cause: PD's assets have one URL space, `/assets/`.
 - Proposed fix: in PD, the mount key of F-01 (a folder at `/`); or a `site.static` folder copied to the
   site root.
+- Phase 1: the files moved to the theme, `site-root/` (theme `66820b9`), and its `partials/head` links the
+  icons and the manifest at `/`. Consequence for Phase 2: `pd build` checks every `href` in the head, so the
+  website's build fails its link check on `/favicon-32x32.png` and friends until the mount exists.
+  `pd dev` serves the pages meanwhile (a missing icon is a 404, not a build stop).
 - Applies upstream: yes
 
 ### F-04 [PD-GAP] Raw HTML in page markdown is shown as text
@@ -138,6 +147,12 @@ the rehearsal setup.
 - Proposed fix: in the theme and content: the home page body as markdown plus `pd-` components (landing
   section, quote, supporters); `coverContent` split into `coverTitle` and `coverSubtitle`. This changes the
   page's markup, not what it says. Needs Stefan's OK since Decisions say the migration doesn't edit pages.
+- Decided 2026-11-25: convert, text unchanged. Phase 1 (theme `ac96b3f`): the landing block
+  (`<div class="t-general landing">`) is the `home` layout's markup around the page body; the supporters
+  close it from `site.supporters` (a placed `pd-` component gets only its tag's values, not `site`, so the
+  layout renders them); the cover takes `coverTitle` and `coverSubtitle`. Phase 2 turns the body into
+  markdown. The other raw-HTML pages (`htwoo-core-cl.md`, `CHANGELOG-core.md`) are changelog copies that
+  go (decision on changelogs); `roadmap.md`'s one line is Phase 2.
 - Applies upstream: yes
 
 ### F-05 [PD-GAP] Sitemap file names and the sitemap index are fixed
@@ -155,6 +170,8 @@ the rehearsal setup.
 - Evidence: `<baseline>/built/sitemap*.xml`, `<baseline>/spike/results/E7-base-path.log`
 - Proposed fix: in PD: `site.sitemap` with a file name and an index that lists other sitemaps (the mounted
   parts' own). Or accept: resubmit sitemaps in the search consoles (Stefan decides).
+- Decided 2026-11-25: dropped; PD's `/sitemap.xml` stays. `/sitemap-pages.xml` and `/components-sitemap.xml`
+  go away (resubmit in the search consoles at the switch).
 - Applies upstream: yes
 
 ### F-06 [PD-GAP] No RSS feeds
@@ -170,6 +187,7 @@ the rehearsal setup.
   `<link rel=alternate>` in the head; the theme's `rss.html` partial writes those.
 - Proposed fix: drop with this finding (Stefan decides), or a PD feed feature. The 6 non-component feeds
   would 404.
+- Decided 2026-11-25: dropped. The theme's `rss.html` is gone (theme `e934224`).
 - Applies upstream: yes
 
 ### F-07 [PD-GAP] Listing entries can't carry a page's own fields
@@ -188,6 +206,10 @@ the rehearsal setup.
 - Proposed fix: workaround in the content (each supporter placed with a `pd-` tag carrying logo and link, on
   the supporters page and the home page: the data then lives twice), or `site.globals.supporters`; or a PD
   feature (declared extra entry fields). Stefan decides.
+- Decided 2026-11-25: `site.globals.supporters` for now. Phase 1: `components/supporter` takes
+  `{ name, logo, link }` (theme `ac96b3f`), so a later data source (entry fields, a query) can feed the same
+  component; `partials/base`'s schema declares `site.supporters`. The supporter pages under
+  `/supporters/` stay as pages (their URLs exist), so the data lives in the globals and in those pages.
 - Applies upstream: yes
 
 ### F-08 [PD-GAP] Head items with no equivalent
@@ -205,6 +227,12 @@ the rehearsal setup.
   "Fluent Design" aren't valid PD tags either, F-22).
 - Proposed fix: drop all three (search engines ignore `keywords`; `nofollow` on supporter pages is the only
   real loss). Stefan decides.
+- Decided 2026-11-25: `<base href>` and `meta keywords` dropped (theme `66820b9`). `nofollow` report, before
+  dropping it: 7 pages set `robots: "noindex, nofollow"` at docs `bc889ced5`: `about.md`, `flavor.md`,
+  `roadmap.md`, `why-htwoo.md`, `supporters/solvion.md`, `supporters/sympraxis.md`,
+  `supporters/voitanos.md`. No page sets `nofollow` alone. `index: false` keeps their `noindex`; what is
+  lost is `nofollow` on their links. Their content has none (checked in the baseline build: no `href` inside
+  their `<article>`); only the navigation every page shares links out. Awaiting Stefan's decision to drop it.
 - Applies upstream: yes
 
 ### F-09 [SUBJECT-DEBT] `build:package` of htwoo-core is broken at the base SHA
@@ -388,6 +416,20 @@ the rehearsal setup.
 - Reproduce: `grep -rl` the content at docs `bc889ced5` for `type:`/`layout:` values: no page uses `media`,
   `general`, `facts` or the cards; no content has `video` or `podcast`.
 - Actual: no media page exists, so Acceptance 4's "media" page type has no page to compare.
+- Decided 2026-11-25: drop unused layouts and partials; Acceptance 3 covers the parts in use.
+- Dropped in theme `e934224` (and the commits before it, which moved the used parts out): layouts
+  `404.html` (empty), `general/single.html`, `media/baseof.html`, `media/list.html`; partials `footer.html`,
+  `generic/supported-by.html` (both empty), `generic/yt.html`, `generic/yt-2.html`, `lists/cards.html`,
+  `media/rollup.html`, `nav/_footer.html`, `rss.html` (F-06); Sass `00-base/_images.scss` (`.test{}`),
+  `02-molecules/_footer.scss`, `_github.scss`, `_imprint.scss`, `_introcard.scss`, `_mediacard.scss`,
+  `menus/_menus.scss`, `04-template/_projects.scss`, `_welcome.scss`, `01-atoms` `.sect-header`;
+  `assets/github/` (its import was commented out), `assets/js/swup/` (a vendored build; the script imports
+  swup from npm); `static/img/` files nothing references (`header-img.jpg`, which differs from the
+  website's `images/header-img.jpg` the home cover uses, `lab-background*`, `lab-logo-opt2.svg`,
+  `n8d-lab-logo.svg`, `site-logo.svg`, two "copy" files); archetypes; `theme.yaml`. Unused parameters of the
+  `figure` shortcode (`link`, `target`, `rel`, `class`, `title`, `attr`, `attrlink`, `width`, `height`).
+  Moved, not dropped: `scripts.html` (now `src/scripts/site.ts`), `ga.html` and `ahrefs.html` (the
+  website's own head, Phase 2).
 - Applies upstream: yes
 
 ### F-21 [SUBJECT-DEBT] `docs/ver/` holds unserved 2021 snapshots
@@ -456,3 +498,78 @@ the rehearsal setup.
     `HTWOO_DISPATCH_TOKEN`.
 - Proposed fix: add `pd-migration` to the fork's `github-pages` environment branch policy; create the token.
 - Applies upstream: no (fork-only)
+
+### F-26 [PD-GAP] A navigation entry can't be a page with children, nor list a folder's pages
+
+- Status: open
+- Phase: 1
+- Repo and commit: theme `7c01b62` (`partials/nav`), PD 0.9.0; menu at docs `bc889ced5`
+  `config/_default/menus.yaml`
+- Reproduce: PD `v0.9.0` `packages/dev-server/src/storefront/navigations.ts`: an entry is exactly one of
+  `{ page }`, `{ href, label }`, `{ label, children }` (`checkEntry`: "has "page" and "children": an entry is
+  one of …"). Phase 2 confirms it with the site config.
+- Expected: "How To's" as today: a link to `/how-to/` with the folder's pages beneath it, listed automatically
+  (`params.dynamic: true`), so a new how-to page shows in the menu with no menu edit.
+- Actual: a group has no link, and its children are listed by hand. "Changelogs" and "Flavors" (groups
+  without a page) map fine.
+- Proposed fix: in PD: a `{ page, children }` entry, and children from a folder (`{ page: "how-to/index.md",
+  children: "folder" }`). Until then (Phase 2): a group with the folder's index page as its first child and
+  the how-to pages listed. `partials/nav` already renders both a link and children for one entry.
+- Applies upstream: yes
+
+### F-27 [PD-GAP] `{{pd-image}}` takes no `class`
+
+- Status: workaround, marked `PD-WORKAROUND: F-27` in `src/styles/components/cover.scss` (theme `837a705`)
+- Phase: 1
+- Repo and commit: theme `ac96b3f`, PD 0.9.0
+- Reproduce: PD `v0.9.0` `packages/renderer/src/image-slots.ts`: the `<img>` gets `alt`, `title`, `loading`,
+  `decoding`, `src`, `srcset`, `sizes`, `width`, `height`; no other hash option is read.
+- Expected: `<img class="o-cover-img" …>` as on the Hugo site.
+- Actual: no class; the cover's rule selects `.o-cover img` instead (same styles, the only image in it).
+- Proposed fix: in PD: pass `class=` through.
+- Applies upstream: yes
+
+### F-28 [SUBJECT-DEBT] swup page transitions assume one stylesheet for every page
+
+- Status: fixed in theme (`7c01b62`); to be verified on real pages in Phase 2
+- Phase: 1
+- Repo and commit: theme `2a8010a` `assets/js/main.ts` → `7c01b62` `src/scripts/site.ts`
+- Reproduce: Phase 2: open a page without code, follow a link to a how-to page (code blocks, `/_pd/code.css`)
+  with and without `@swup/head-plugin`.
+- Expected: the next page styled as on a full load.
+- Actual (by design, without the plugin): swup swaps `main#swup` only and keeps the first page's `<head>`;
+  Hugo linked one bundle everywhere, Pattern Dump links each page's own stylesheets and scripts.
+- Fix: `@swup/head-plugin` 2.3.1 (`awaitAssets: true`) next to the a11y plugin. swup 4.8.1 and the a11y
+  plugin 5.0.0 are pinned at the versions of the docs branch's lockfile.
+- Applies upstream: yes
+
+### F-29 [SUBJECT-DEBT] Accessibility defects Pattern Dump's build would refuse
+
+- Status: fixed in theme
+- Phase: 1
+- Repo and commit: theme `2a8010a`; fixed in `7c01b62`, `ac96b3f`, `c6f3f99`
+- Reproduce: baseline build `<baseline>/work/node20/docs-site/public/index.html`: the logo link
+  (`a.home-link`) and each `a.sponsor-link` hold only an inlined SVG with no title (axe `link-name`,
+  serious); `/supporters/` has a `<main>` inside the frame's `<main>` (PD: exactly one main landmark).
+- Fix: `aria-label` from `site.title` on the logo link and from the supporter's `name` on its link; the inner
+  `<main>` removed (it had no visual effect: `grid-column` outside a grid, `box-sizing` without padding).
+- Applies upstream: yes
+
+### F-30 [SUBJECT-DEBT] Visual differences the skin introduces
+
+- Status: open: each is checked against the baseline screenshots in Phase 2 (local, F-23)
+- Phase: 1
+- Repo and commit: theme `837a705`
+- Reproduce: Phase 2, `<baseline>/screenshots/built/` against the PD site's pages, per page type.
+- Expected differences, each on purpose or from Pattern Dump's markup:
+  - Listing entries show the title only, not `0001-01-01 | <title>` (Hugo's zero date, F-22 territory).
+  - Listing order: Hugo sorted by title; PD by the folder's `order`, then file name. Phase 2 sets `order`
+    where the two differ (guidelines).
+  - The home menu entry is highlighted on the home page: the Hugo menu never marked it (it compared `//`
+    with `/`), and its top-level class read `menu-itemactive` (missing space).
+  - Code blocks: Shiki's tokens in Monokai colours instead of Chroma's Monokai; a few tokens differ.
+  - Images carry `width` and `height` (PD); `.t-general img` gets `height: auto` so they keep their ratio.
+  - Home landing text as markdown: the two links that opened in a new tab (`target="_blank"`) open in the
+    same tab, and the two bare text lines become paragraphs (paragraph margins).
+  - Cover image and figure as WebP variants; the logo link and supporter links have accessible names (F-29).
+- Applies upstream: yes
