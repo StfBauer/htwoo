@@ -1,4 +1,4 @@
 [submodule "website/theme"]
 	path = website/theme
-	url = https://github.com/n8design/htwoo-theme.git
-	branch = main
+	url = https://github.com/StfBauer/htwoo-theme.git
+	branch = pd
