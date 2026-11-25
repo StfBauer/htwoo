@@ -708,7 +708,7 @@ them, and each needs its own fix in n8design/htwoo.
   `{width=… height=…}`. Workarounds (Stefan decides): host the three badges in the website's images (the
   license badge then stops updating itself), or a `pd-` component with a size.
 - Done: theme `4cff14a` `components/badge` (`src`, `alt`, `width`, `height`, optional `link`) and
-  `components/badges` (a row, one paragraph); htwoo `da077151d` places them in `concepts.md` with the sizes
+  `components/badges` (a row, one paragraph); htwoo `55cc1bc27` places them in `concepts.md` with the sizes
   the SVGs declare (45×20, 180×20, 78×20), the first linked as before. `pd dev` now only notes them
   ("an external image … served as it is"); no size problem left for `pd build`. Checked in Chromium at
   1280 and 390px, text at 100 and 200 %: one row, the first linked (`<baseline>/phase2/after-decisions/`).
@@ -743,7 +743,7 @@ them, and each needs its own fix in n8design/htwoo.
 
 - Status: fixed: decided 2026-11-25, the bump subject follows the repo's rule,
   `chore(deps): Bump htwoo-theme to <short sha>`; commitlint unchanged. The replay log's format is updated;
-  `27ac7c18a` (lowercase, already pushed) stays as it is, `ad7865970` is the first in the new format.
+  `27ac7c18a` (lowercase, already pushed) stays as it is, `92db37b27` is the first in the new format.
 - Phase: 2
 - Repo and commit: htwoo `27ac7c18a` (`chore(deps): bump htwoo-theme to 74bb212`)
 - Reproduce: `echo 'chore(deps): bump htwoo-theme to 74bb212' | npx commitlint` with the repo's

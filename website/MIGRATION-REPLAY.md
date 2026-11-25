@@ -502,8 +502,8 @@ the copy button styled in the theme, in the block's corner (look chosen from thr
   (16 components) for all three; HEAD typecheck 0, audit 0 defects across 18 components; the theme's
   diff searched for `border-radius`, `box-shadow`, gradients, `backdrop-filter`, blur, `translateY`,
   `transition`, `scale(`, hex colours, `px` and `!important` in added lines: none.
-- `ad7865970` chore(deps): Bump htwoo-theme to 2b7fd50 (htwoo): submodule `74bb212` → `2b7fd50`.
-- `da077151d` refactor(website): Place the concepts badges with the badges component (htwoo).
+- `92db37b27` chore(deps): Bump htwoo-theme to 2b7fd50 (htwoo): submodule `74bb212` → `2b7fd50`.
+- `55cc1bc27` refactor(website): Place the concepts badges with the badges component (htwoo).
 - Check (htwoo): `pd dev`: the badges render as `<p><a href="https://www.youtube.com/…"><img … width="45"
   height="20"></a> <img … width="180" height="20"> <img … width="78" height="20"> </p>`, noted as external
   images only. In Chromium (`<baseline>/scripts/copy-badge-check.cjs`, pages loaded as `https://htwoo.io/…`
