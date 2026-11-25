@@ -18,9 +18,9 @@ the rehearsal setup.
 | F-05 | [PD-GAP] | htwoo | Sitemap file names and the sitemap index are fixed (`/sitemap-pages.xml`, `/components-sitemap.xml`) | won't fix: dropped, PD's `/sitemap.xml` kept (decision 3) |
 | F-06 | [PD-GAP] | htwoo | No RSS feeds: 48 `index.xml` URLs have no equivalent | won't fix: dropped (decision 3) |
 | F-07 | [PD-GAP] | theme | Listing entries can't carry a page's own fields (supporters' `logo`, `link`) | workaround: `site.globals.supporters` (decision 2) |
-| F-08 | [PD-GAP] | theme | Head items with no equivalent: `<base href>`, `meta keywords`, robots `nofollow` | `<base>`, keywords dropped; `nofollow` reported, awaiting decision |
+| F-08 | [PD-GAP] | theme | Head items with no equivalent: `<base href>`, `meta keywords`, robots `nofollow` | won't fix: all three dropped (decisions 2026-11-25) |
 | F-09 | [SUBJECT-DEBT] | htwoo | `build:package` of htwoo-core is broken at the base SHA | open |
-| F-10 | [SUBJECT-DEBT] | htwoo | Nx ignores the `project.json` targets: root `nx run …` scripts fail | open |
+| F-10 | [SUBJECT-DEBT] | htwoo | Nx ignores the `project.json` targets: root `nx run …` scripts fail | open; cause found (Phase 2) |
 | F-11 | [SUBJECT-DEBT] | htwoo | Unit tests fail at the base SHA; htwoo-react has no runnable test target | open |
 | F-12 | [SUBJECT-DEBT] | htwoo | npm has `@n8d/htwoo-core` 2.9.2 from a commit `main` doesn't contain (main: 2.7.3) | open |
 | F-13 | [SUBJECT-DEBT] | htwoo | Deployed `/htwoo-core/css/` is the committed file; tracked build outputs are stale | open |
@@ -33,14 +33,19 @@ the rehearsal setup.
 | F-20 | [SUBJECT-DEBT] | theme | Unused or empty theme parts (media, YouTube, cards, footer, general, 404) | fixed in theme: dropped (decision 4) |
 | F-21 | [SUBJECT-DEBT] | htwoo | `docs/ver/` is 979 tracked files of 2021 style guide snapshots, not served | open |
 | F-22 | [SUBJECT-DEBT] | htwoo | Front matter that Hugo ignored or that PD will refuse | open |
-| F-23 | [FORK-ONLY] | htwoo | typography.com refuses the fork's host: brand fonts don't load on `stfbauer.github.io` | open |
+| F-23 | [FORK-ONLY] | htwoo | typography.com refuses the fork's host: brand fonts don't load on `stfbauer.github.io` | open; parity checked locally (decision) |
 | F-24 | [FORK-ONLY] | htwoo | Under the `/htwoo/` base path PD writes no `robots.txt` | open |
 | F-25 | [FORK-ONLY] | htwoo, theme | Fork setup gaps: Pages environment allows `main` only; `HTWOO_DISPATCH_TOKEN` missing | open: Stefan, before Phase 4 |
-| F-26 | [PD-GAP] | htwoo, theme | A navigation entry can't be a page with children, nor list a folder's pages | open |
+| F-26 | [PD-GAP] | htwoo, theme | A navigation entry can't be a page with children, nor list a folder's pages | open; menu by hand in `site.globals` |
 | F-27 | [PD-GAP] | theme | `{{pd-image}}` takes no `class` | workaround (`PD-WORKAROUND: F-27`) |
-| F-28 | [SUBJECT-DEBT] | theme | swup page transitions assume one stylesheet for every page | fixed in theme; verify in Phase 2 |
+| F-28 | [SUBJECT-DEBT] | theme | swup page transitions assume one stylesheet for every page | fixed in theme, verified (Phase 2) |
 | F-29 | [SUBJECT-DEBT] | theme | Accessibility defects PD's build would refuse: unnamed logo and supporter links, nested `<main>` | fixed in theme |
-| F-30 | [SUBJECT-DEBT] | theme | Visual differences the skin introduces on purpose or by PD's markup | open: confirm in Phase 2 screenshots |
+| F-30 | [SUBJECT-DEBT] | theme | Visual differences the skin introduces on purpose or by PD's markup | parity checked (Phase 2): list in the block |
+| F-31 | [SUBJECT-DEBT] | htwoo | about, why-htwoo, roadmap and flavor are `noindex`, probably unintended | open: Stefan decides later |
+| F-32 | [PD-GAP] | htwoo | An image between two variant widths shows at the smaller variant, not its own width | open |
+| F-33 | [PD-GAP] | htwoo | An external image in markdown can't get a width and height: `pd build` stops on it | open, blocks the full `pd build` |
+| F-34 | [PD-GAP] | htwoo | Content image and theme asset URLs change (`/images/…`, `/how-to/*.png`, `/js/main.js`, `/assets/css/main.*.css`) | open: decision |
+| F-35 | [SUBJECT-DEBT] | htwoo | The bump commit format `chore(deps): bump …` breaks commitlint's sentence-case subject rule | open: decision before Phase 4 |
 
 ---
 
@@ -232,7 +237,8 @@ the rehearsal setup.
   `roadmap.md`, `why-htwoo.md`, `supporters/solvion.md`, `supporters/sympraxis.md`,
   `supporters/voitanos.md`. No page sets `nofollow` alone. `index: false` keeps their `noindex`; what is
   lost is `nofollow` on their links. Their content has none (checked in the baseline build: no `href` inside
-  their `<article>`); only the navigation every page shares links out. Awaiting Stefan's decision to drop it.
+  their `<article>`); only the navigation every page shares links out. Decided 2026-11-25: `nofollow` dropped; `noindex`
+  carried over as `index: false` (F-31 asks whether those four pages should be `noindex` at all).
 - Applies upstream: yes
 
 ### F-09 [SUBJECT-DEBT] `build:package` of htwoo-core is broken at the base SHA
@@ -268,6 +274,13 @@ the rehearsal setup.
 - Effect on this migration: removing the Hugo targets from `docs/project.json` changes nothing that runs;
   the new `website` Nx project must be checked to load at all (Phase 2).
 - Proposed fix: in hTWOo (Nx project inference vs `project.json` names).
+- Phase 2, cause found: the root `.gitignore` line 128 is `**/project.json`, and Nx leaves out files git
+  ignores, so no `project.json` in the repo is loaded (`docs/`, `htwoo-core/`, `htwoo-react/`).
+  `git check-ignore -v website/project.json` → `.gitignore:128:**/project.json`. `website/project.json` is
+  tracked with `git add -f`, like the others, and loads no more than they do. Un-ignoring it alone was
+  left out on purpose: root scripts such as `npm run build` (`nx run-many -t build`) would then build the
+  website too, which changes what htwoo-core's and htwoo-react's builds run (Acceptance 5, 6).
+- Proposed fix: in hTWOo: drop the `**/project.json` line (and check every target that then loads).
 - Applies upstream: yes
 
 ### F-11 [SUBJECT-DEBT] Unit tests fail at the base SHA
@@ -462,6 +475,15 @@ the rehearsal setup.
   - File names with capitals: `SVG-instead-of-icon-fonts.md`, `CHANGELOG-core.md` (Hugo lowercased the URL;
     a lowercase file name keeps it).
   - `how-to/SVG-instead-of-icon-fonts.md` has `group: how-two` (typo, unused).
+- Phase 2 additions: `code-of-conduct.md` had an empty `description:`, which Pattern Dump reads as the
+  start of a list ("must be text, not a list"): dropped. The supporter pages' `tagline` values were never
+  rendered and are dropped with `link` and `logo`; recorded here so nothing goes unseen: Solvion "Focus on
+  people. Supported by established Microsoft technology.", Sympraxis "Accelerate your success with
+  Microsoft 365, guided by our passionate team of experts", Voitanos "Become the Best Microsoft 365 Web &
+  Cloud Developer!". `test.md` stays a draft (left out of `pd build`, as Hugo left it out).
+- Phase 2: `roadmap.md`'s link was raw HTML with a Liquid `href` (`{{ "/release-history.html" | prepend:
+  site.baseurl }}`), rendered by Hugo as a broken link; it is a markdown link to `/release-history/` now
+  (F-04: raw HTML is text in Pattern Dump).
 - Applies upstream: yes
 
 ### F-23 [FORK-ONLY] typography.com refuses the fork's host
@@ -473,6 +495,11 @@ the rehearsal setup.
 - Actual: on the fork the brand fonts fall back. Visual parity on the fork can't include fonts; screenshots
   for parity are taken with htwoo.io's requests answered from the local build (as in the baseline).
 - Proposed fix: fork-only, none.
+- Phase 2, locally: a page served by `pd dev` (`live.localhost`) loads the typography.com stylesheet, which
+  never answers for that referrer; it is render-blocking, so the page's `load` event waits until the
+  request times out. Tests block that one request (`<baseline>/scripts/hot-reload.cjs`,
+  `swup-check.cjs`). Production on htwoo.io is not affected; the parity screenshots load pages as
+  `https://htwoo.io/…` and get the stylesheet's redirect as on the live site.
 - Applies upstream: no (fork-only)
 
 ### F-24 [FORK-ONLY] No `robots.txt` under the `/htwoo/` base path
@@ -513,8 +540,13 @@ the rehearsal setup.
 - Actual: a group has no link, and its children are listed by hand. "Changelogs" and "Flavors" (groups
   without a page) map fine.
 - Proposed fix: in PD: a `{ page, children }` entry, and children from a folder (`{ page: "how-to/index.md",
-  children: "folder" }`). Until then (Phase 2): a group with the folder's index page as its first child and
-  the how-to pages listed. `partials/nav` already renders both a link and children for one entry.
+  children: "folder" }`). `partials/nav` already renders both a link and children for one entry.
+- Decided 2026-11-25: the menu by hand in `site.globals.navigations.main` for now, finding kept open.
+  Phase 2 (htwoo `335dc4ef2`): the menu mirrors the Hugo menu's order and labels; "How To's" is a group
+  of the four how-to pages, so `/how-to/` is no longer linked from the menu, only from pages. The list is
+  by hand and can drift from the folders: a new page under `how-to/` (or any folder) does not appear in
+  the menu until someone adds an entry. The two changelog entries are `href` links until F-02 brings the
+  pages (then `page` entries).
 - Applies upstream: yes
 
 ### F-27 [PD-GAP] `{{pd-image}}` takes no `class`
@@ -531,7 +563,7 @@ the rehearsal setup.
 
 ### F-28 [SUBJECT-DEBT] swup page transitions assume one stylesheet for every page
 
-- Status: fixed in theme (`7c01b62`); to be verified on real pages in Phase 2
+- Status: fixed in theme (`7c01b62`), verified in Phase 2
 - Phase: 1
 - Repo and commit: theme `2a8010a` `assets/js/main.ts` → `7c01b62` `src/scripts/site.ts`
 - Reproduce: Phase 2: open a page without code, follow a link to a how-to page (code blocks, `/_pd/code.css`)
@@ -539,6 +571,9 @@ the rehearsal setup.
 - Expected: the next page styled as on a full load.
 - Actual (by design, without the plugin): swup swaps `main#swup` only and keeps the first page's `<head>`;
   Hugo linked one bundle everywhere, Pattern Dump links each page's own stylesheets and scripts.
+- Phase 2 check (`<baseline>/scripts/swup-check.cjs`, `pd dev`): `/about/` (no code, no `/_pd/code.css`),
+  click "Getting Started" in the menu: no full page load, the page has `/_pd/code.css`, `pre.shiki` is
+  `rgb(39, 40, 34)`, a string token `rgb(230, 219, 116)`, title and current menu entry updated.
 - Fix: `@swup/head-plugin` 2.3.1 (`awaitAssets: true`) next to the a11y plugin. swup 4.8.1 and the a11y
   plugin 5.0.0 are pinned at the versions of the docs branch's lockfile.
 - Applies upstream: yes
@@ -557,19 +592,145 @@ the rehearsal setup.
 
 ### F-30 [SUBJECT-DEBT] Visual differences the skin introduces
 
-- Status: open: each is checked against the baseline screenshots in Phase 2 (local, F-23)
-- Phase: 1
-- Repo and commit: theme `837a705`
-- Reproduce: Phase 2, `<baseline>/screenshots/built/` against the PD site's pages, per page type.
-- Expected differences, each on purpose or from Pattern Dump's markup:
-  - Listing entries show the title only, not `0001-01-01 | <title>` (Hugo's zero date, F-22 territory).
-  - Listing order: Hugo sorted by title; PD by the folder's `order`, then file name. Phase 2 sets `order`
-    where the two differ (guidelines).
-  - The home menu entry is highlighted on the home page: the Hugo menu never marked it (it compared `//`
-    with `/`), and its top-level class read `menu-itemactive` (missing space).
-  - Code blocks: Shiki's tokens in Monokai colours instead of Chroma's Monokai; a few tokens differ.
-  - Images carry `width` and `height` (PD); `.t-general img` gets `height: auto` so they keep their ratio.
-  - Home landing text as markdown: the two links that opened in a new tab (`target="_blank"`) open in the
-    same tab, and the two bare text lines become paragraphs (paragraph margins).
-  - Cover image and figure as WebP variants; the logo link and supporter links have accessible names (F-29).
+- Status: parity checked in Phase 2 (locally, F-23); the differences below are the result, each on purpose
+  or from Pattern Dump's markup. None is fixed silently; two were fixed in the theme because they broke
+  the page (marked).
+- Phase: 1, 2
+- Repo and commit: theme `74bb212`, htwoo `27ac7c18a`, PD 0.9.0, Node 24.22.3, macOS 27.2.1
+- Reproduce:
+  1. `cd website && npm ci && npx pd dev --port 4511`
+  2. `node <baseline>/scripts/parity-shots.cjs <playwright dir> 4511 website/theme/site-root
+     <baseline>/phase2/parity/pd` (pages loaded as `https://htwoo.io/…`, answered by `pd dev`; the theme's
+     `site-root/` stands in for the not-yet-available mount, F-01/F-03; analytics blocked; every page
+     scrolled so lazy images load)
+  3. `node <baseline>/scripts/side-by-side.cjs <sharp dir> <baseline>/screenshots/built
+     <baseline>/phase2/parity/baseline-extra/built <baseline>/phase2/parity/pd
+     <baseline>/phase2/parity/side-by-side`
+- Evidence: `<baseline>/phase2/parity/side-by-side/*.png` (baseline left, PD right), per page type at
+  1280×900 and 390×844; differing pixels in the shared area (shifts count fully):
+
+  | Page type | Desktop | Mobile |
+  |---|---|---|
+  | home `/` | 1.0 % | 1.6 % |
+  | content page `/getting-started/` | 26.7 % | 36.4 % |
+  | long content page `/how-to/how-to-spfx-html/` | 24.6 % | 33.9 % |
+  | listing `/guidelines/` | 1.2 % | 4.4 % |
+  | supporters `/supporters/` | 0.0 % | 0.0 % |
+  | listing with text `/case-studies/` | 0.0 % | 0.0 % |
+  | concepts `/concepts/` (figure component) | 16.9 % | 21.9 % |
+  | 404 | baseline has none (GitHub's default page live) | |
+  | component page, media | not in this phase (frozen `/components/`, Phase 3); no media page exists (F-20) | |
+
+- The differences:
+  - Menu: the current page's entry is highlighted on every page. The Hugo menu never highlighted a
+    top-level entry (it compared the entry's URL plus `/` with the page's, which never matched).
+  - Listings show the title only, not `0001-01-01 | <title>`; order kept (`order:` in the folder pages).
+  - Code blocks: Shiki's tokens in the Monokai colours instead of Chroma's (shell commands are coloured
+    now, plain on the Hugo site); Pattern Dump adds a **Copy** button above each block, which the theme
+    doesn't style yet (a default button that pushes the block down by its height). Proposed: a theme rule
+    placing it in the block's corner (Stefan decides).
+  - Images in a page's markdown: WebP variants with `width` and `height`; shown at the largest variant not
+    wider than the image (F-32), so the how-to screenshots are narrower; left-aligned in the column.
+    A titled image on its own line is a `<figure>` with the title as a visible caption ("Standard Button",
+    "Theming", "Be like water and adopt fast"); Hugo showed the title as a tooltip only.
+    Fixed in the theme because it broke the page: such a figure shrank to its caption's width
+    (theme `13ab614`), and every article image showed at 300px (`sizes=auto` against `width: auto`,
+    theme `74bb212`).
+  - Home: the two links that opened in a new tab open in the same tab now (decided 2026-11-25: they stay
+    that way): "Atomic Design Methodology" (`https://atomicdesign.bradfrost.com/chapter-2/`) and "Fluent
+    Design System" (`https://www.microsoft.com/design/fluent/`). The two bare text lines ("Engage with
+    …", "For futher information …") are paragraphs now. The page is 39–47px shorter at the bottom.
+  - Content page on mobile: the Hugo page was 770px wide in a 390px viewport (it scrolled sideways); the
+    PD page fits the viewport.
+  - `<title>`: "Getting Started · hTWOo by N8D" (Pattern Dump's separator) instead of "Getting Started |
+    hTWOo by N8D".
+  - 404: a themed page ("Page not found", from the theme's page layout) instead of GitHub's default page.
+  - Logo link and supporter links have accessible names (F-29); not visible.
+- Applies upstream: yes
+
+### F-31 [SUBJECT-DEBT] Four content pages are `noindex`, probably unintended
+
+- Status: open: Stefan decides later. Carried over as is (`index: false`).
+- Phase: 2
+- Repo and commit: docs `bc889ced5` (`robots: "noindex, nofollow"`), htwoo `b8945459e` (`index: false`)
+- Where: `website/pages/about.md`, `why-htwoo.md`, `roadmap.md`, `flavor.md`
+- Reproduce: `git show bc889ced5:content/<page>.md | head`; live: `curl -s https://htwoo.io/why-htwoo/ | grep -o
+  '<meta name=robots[^>]*>'`.
+- Actual: the four are kept out of search engines and the sitemap. `about.md` and `flavor.md` have no body
+  (a title only), so `noindex` may be meant for them; `why-htwoo.md` and `roadmap.md` have content. The
+  three supporter pages are `noindex` too, which fits pages that hold only a name.
+- Proposed fix: in the content: drop `index: false` where the page should be found.
+- Applies upstream: yes
+
+### F-32 [PD-GAP] An image between two variant widths shows at the smaller variant
+
+- Status: open
+- Phase: 2
+- Repo and commit: htwoo `27ac7c18a` (theme `74bb212`), PD 0.9.0
+- Where: `website/pages/how-to/*.md` (screenshots), the `page` layout's slot `widths: [480, 960, 1440, 1920]`
+- Reproduce: `pd dev`, `/how-to/how-to-spfx-html/`: `how-to-spfx-html-theming-1.png` is 602×329; its `<img>` has
+  `width="480"` and only the 480w variant (`<baseline>/scripts/img-rules.cjs … '.doc-figure img'`).
+- Expected: the image at its own width, 602px (the Hugo site showed the original file).
+- Actual: Pattern Dump leaves out every width above the image's own and writes the largest remaining one as
+  `width`, so the image shows at 480px. Own widths → shown: 602 → 480, 667 → 480, 748 → 480, 1276 → 960,
+  1497 → 1440; the concepts chart 2080 → its column.
+- Proposed fix: in PD: add a variant at the image's own width when it lies between two slot widths (or write
+  the own width as `width`). Denser slot widths only narrow the gap.
+- Applies upstream: yes
+
+### F-33 [PD-GAP] An external image in markdown can't get a width and height
+
+- Status: open; blocks the full `pd build` (Phase 3) unless decided
+- Phase: 2
+- Repo and commit: htwoo `b8945459e`, PD 0.9.0
+- Where: `website/pages/concepts.md`: three shields.io badges (`![100% Fluent Design](https://img.shields.io/badge/Fluent-blue)`,
+  `…DOM%20manipulation%20free-orange`, `…/github/license/n8design/liquid`)
+- Reproduce: `pd dev` warns `concepts.md: <img src="https://img.shields.io/badge/Fluent-blue"> has no width and
+  height, so the page shifts when it loads`; PD's site guide (`v0.9.0`, "The image checks"): in `pd build` an
+  `<img>` without both is a problem and nothing is written.
+- Expected: the badges render as on the Hugo site.
+- Actual: markdown can't give an image a size, and an external image gets no variants, so the build stops.
+- Proposed fix: in PD: read the size of an external SVG/raster at build time, or let a markdown image carry
+  `{width=… height=…}`. Workarounds (Stefan decides): host the three badges in the website's images (the
+  license badge then stops updating itself), or a `pd-` component with a size.
+- Applies upstream: yes
+
+### F-34 [PD-GAP] Content image and theme asset URLs change
+
+- Status: open: decision
+- Phase: 2
+- Repo and commit: htwoo `27ac7c18a`, PD 0.9.0
+- Reproduce: every live URL with status 200 outside `/components/`, `/htwoo-core/`, `/htwoo-react/`, the feeds
+  and the sitemaps (55, `<baseline>/phase2/live-in-scope.paths`) fetched from `pd dev`; the ones that aren't
+  served: `<baseline>/phase2/live-not-served.txt`.
+- Actual, by cause:
+  - waiting for the mount (F-01/F-03): `/889032/2F9E0D2024732B3BD.css`, `/favicon.ico`, `/favicon-16x16.png`,
+    `/favicon-32x32.png`, `/apple-touch-icon.png`, `/android-chrome-192x192.png`, `/android-chrome-512x512.png`,
+    `/site.webmanifest` (all in the theme's `site-root/`);
+  - waiting for F-02: `/changelog/htwoo-core-cl/`, `/changelog/htwoo-react-cl/`, `/changelog-core/`;
+  - `pd dev` only: `/index.html` (`pd build` writes `index.html` files, served by any static host);
+  - **this finding**: content images at their Hugo paths, `/images/header-img.jpg`,
+    `/images/front_end_frameworks_experience_ranking.png`, `/how-to/how-to-spfx-*.png` (5): the files are in
+    the website's `images/` asset folder, served at `/assets/images/…` and to pages as WebP variants under
+    `/_pd/images/`; and the Hugo theme's bundles `/assets/css/main.<hash>.css`, `/js/main.js` (Pattern Dump
+    serves the skin's CSS and script under `/_pd/`).
+- Proposed fix: theme bundles: accept (fingerprinted or theme-internal, nothing links them from outside).
+  Content images: Stefan decides: accept (only search engines' image results and hotlinks know them), or
+  mount `website/images/` at `/images/` and the five screenshots at `/how-to/` with the F-01 feature, so the
+  old addresses keep answering.
+- Applies upstream: yes
+
+### F-35 [SUBJECT-DEBT] The bump commit format breaks commitlint's subject rule
+
+- Status: open: decision before Phase 4 (the deploy workflow writes these commits)
+- Phase: 2
+- Repo and commit: htwoo `27ac7c18a` (`chore(deps): bump htwoo-theme to 74bb212`)
+- Reproduce: `echo 'chore(deps): bump htwoo-theme to 74bb212' | npx commitlint` with the repo's
+  `commitlint.config.js` (`subject-case: sentence-case`).
+- Expected: bump commits pass the repo's commit rules.
+- Actual: the brief's format starts the subject in lowercase; commitlint wants sentence case. No CI runs
+  commitlint today (only a local husky hook, not installed in a fresh clone), so nothing stops it, but the
+  history mixes both.
+- Proposed fix: in the brief: `chore(deps): Bump htwoo-theme to <short sha>`; or relax `subject-case` for
+  `chore(deps)`.
 - Applies upstream: yes

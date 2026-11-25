@@ -315,7 +315,8 @@ history where git detects the rename.
 - `site-root/`: `favicon.ico`, `favicon-16x16.png`, `favicon-32x32.png`, `apple-touch-icon.png`,
   `android-chrome-192x192.png`, `android-chrome-512x512.png`, `site.webmanifest`, `889032/` (58 files),
   copied from htwoo docs `bc889ced5` `static/` (`git archive`; cross-repo, so no history). The htwoo side
-  removes them in Phase 2. To be mounted at `/` by the website (F-01/F-03).
+  doesn't remove them: they live on the `docs` branch, which is retired, not edited (correction made in
+  Phase 2). To be mounted at `/` by the website (F-01/F-03).
 - Check: build 14 components; `site-root/` files byte-identical to docs `bc889ced5` (`git archive` source).
 
 ### 1.8 `e934224` refactor(skin): Remove the Hugo theme (htwoo-theme)
@@ -362,6 +363,124 @@ history where git detects the rename.
 - `docs(website): Update the migration logs for phase 1`: findings F-26 to F-30, decisions and Phase 1
   outcomes on F-01 to F-08 and F-20, this section.
 - Check: `git show --stat HEAD` lists the two logs only.
+
+## Phase 2: the website onto Pattern Dump (htwoo, `website/`)
+
+Decisions of 2026-11-25 applied: F-08 `nofollow` dropped, `noindex` carried over (F-31 for the four pages);
+no workaround for the root files: pages, parity and hot reload are checked with `pd dev`, the full
+`pd build` runs once the mount feature is released; F-26 menu by hand in `site.globals` (finding open);
+F-30 the two home links that opened in a new tab stay as they are, listed in F-30.
+
+Environment: Node 24.22.3, npm 11.19.1, PD 0.9.0 (exact, `website/package.json`), theme `@n8d/htwoo-theme`
+as `file:theme` (npm links it and runs its `prepare`, which builds `dist/helpers.js`).
+
+**htwoo-core CSS:** the theme uses none. No layout, partial or component of the theme (`74bb212`) includes
+hTWOo markup or loads htwoo-core's CSS, and neither `website/package.json` nor the theme's `package.json`
+depends on `@n8d/htwoo-core` (decision 5's npm 2.9.2 pin waits for the first part that needs it). Input for
+the htwoo-core step: when the theme's patterns compose hTWOo components, `@n8d/htwoo-core` comes in then.
+
+Check for every htwoo commit from 2.4 on (`<baseline>/scripts/verify-website.sh`, clean clone of the
+branch with `--recurse-submodules`, the theme fetched from the fork through `.gitmodules`): `npm ci` in
+`website/`, `pd dev`, every route of `/api/pages` fetched. Commits 2.1 to 2.3 have no website project yet;
+their check is the moved files (`git show --stat`) and that htwoo-core and htwoo-react read nothing there
+(2.11).
+
+### 2.1 `f1cd9829b` refactor(website): Move the hand-written docs content into the website (htwoo)
+
+- `git mv` of `docs/guidelines/` → `website/pages/guidelines/`, `docs/how-to/*.md` → `website/pages/how-to/`,
+  `docs/how-to/*.png` → `website/images/how-to/`, `docs/_release-history.md` → `website/pages/release-history.md`;
+  `git rm` of `docs/change-log/htwoo-core.md` (blob equal to `htwoo-core/CHANGELOG.md`, checked with
+  `git rev-parse`), `docs/readme.md`, `docs/assets/*` (unreferenced in the baseline crawl and build).
+- Check: `git show --name-status` 22 renames, 5 deletions; `docs/` holds `htwoo-components/`, `htwoo-core/`,
+  `htwoo-react/`, `ver/`, `project.json`.
+
+### 2.2 `5e0941ca8` docs(website): Bring each moved page to its newest version from the docs branch (htwoo)
+
+- `git show bc889ced5:content/<file>` over the four differing files (three SPFx how-tos, release history).
+- Check: every moved page is byte-identical to its `docs` branch copy (`cmp`).
+
+### 2.3 `c3a95b4bb` docs(website): Add the site-only pages from the docs branch (htwoo)
+
+- 15 pages and 6 images from `bc889ced5` (`content/`, `static/images/`), unchanged. Not taken: the changelog
+  copies, `framworks-over-time.png`, `background.jpg`, `htwoo.jpg` (unreferenced).
+
+### 2.4 `057b0956b` feat(website): Add the website project with the theme as a pattern package (htwoo)
+
+- `website/package.json`, `package-lock.json`, `pattern-dump.config.ts`, `project.json` (`git add -f`, F-10),
+  `.gitignore`; submodule `website/theme` at `837a705`, `.gitmodules` with the upstream URL (the fork URL is
+  2.10).
+- Check: `npm ci` 0; `pd dev` starts with `pattern package @n8d/htwoo-theme@1.0.0` (linked, watched); the
+  site refuses the not yet renamed pages (`_index.md: a page's file name is part of the URL …`), as expected
+  until 2.5.
+
+### 2.5 `b8945459e` refactor(website): Convert the pages to Pattern Dump (htwoo)
+
+- Renames (`_index.md` → `index.md`, the SVG how-to lowercase), folder pages `guidelines/`, `how-to/`,
+  `changelog/` with `order` keeping Hugo's sort by title, front matter (`<baseline>/scripts/convert-frontmatter.py`,
+  its output per page in F-22), the home body as markdown, the concepts figure as `<pd-components-figure>`,
+  image paths to `/assets/images/`, the roadmap link.
+- Check: `pd dev`: 35 pages, all 200; layouts as intended (`/api/pages`: 29 `page`, 4 `listing`, `home`,
+  `supporters`); 5 site warnings (links to `/htwoo-core`, `/htwoo-react/`, three external badges, F-33).
+
+### 2.6 `335dc4ef2` feat(website): Add the navigation, supporters and analytics (htwoo)
+
+- `site.globals` (title "hTWOo by N8D", `navigations.main`, `supporters`), `site.image`, `head.hbs` (GA and
+  Ahrefs; on for `pd build`, off for `pd dev`, `HTWOO_ANALYTICS` overrides), no tag or category pages.
+- Check: 35 pages 200; menu entries in the live menu's order with its labels; with `HTWOO_ANALYTICS=1` both
+  tags are in the head; 179 site warnings = 35 pages × 5 menu links to parts Phase 3 and F-02 bring
+  (`/htwoo-core/`, `/htwoo-react/`, the icon page, the two changelog pages) + the 3 badges + `/htwoo-core`.
+
+### 2.7 `3ac0476a2` build(docs): Remove the Hugo targets (htwoo)
+
+- `docs/project.json` without `hugo:build`, `hugo:serve` (text removal, the rest of the file unchanged);
+  root `package.json` without `docs:hugo:build`, `docs:hugo:serve`.
+- Check: both files parse; `git grep -i hugo` in `docs/project.json`, `package.json`, `nx.json`: none.
+
+### 2.8 `13ab614`, `74bb212` fix(skin) (htwoo-theme)
+
+- `13ab614` Keep markdown figures at the column's width; `74bb212` Let article images keep their width
+  attribute (F-30: both broke pages, found in the parity check).
+- Check: `<baseline>/scripts/verify-theme.sh 837a705 74bb212`: `npm ci` 0, build 0 (14 components) for
+  both; HEAD typecheck 0, audit 0 defects.
+
+### 2.9 `27ac7c18a` chore(deps): bump htwoo-theme to 74bb212 (htwoo)
+
+- Submodule `website/theme` `837a705` → `74bb212` (the brief's bump format; F-35).
+- Check: `git submodule status` → `74bb212…`; website check below.
+
+### 2.10 Logs and the fork commit (htwoo)
+
+- `docs(website): Update the migration logs for phase 2`: findings F-31 to F-35, the Phase 2 results on
+  F-08, F-10, F-22, F-23, F-26, F-28, F-30, this section.
+- `chore(fork): Point the theme submodule at the htwoo-theme fork` (**FORK-ONLY**, at the tip): `.gitmodules`
+  URL `https://github.com/StfBauer/htwoo-theme.git`, branch `pd`. Swapped upstream for n8design/htwoo-theme
+  `main` pinned to the theme PR's merge commit (Part 1, step 4).
+
+### 2.11 Acceptance checks of Phase 2
+
+- **1, content pages:** the 37 Hugo pages outside `/components/` (appendix) against `pd dev`'s routes: 34 at
+  the same path; 3 wait for F-02 (`/changelog/htwoo-core-cl/`, `/changelog/htwoo-react-cl/`,
+  `/changelog-core/`); `/test/` is a draft (not built, as on the Hugo site). Every other live URL with
+  status 200 in scope (55): served, or listed by cause in F-34.
+- **2:** no Hugo config, templates, `themes/`, shortcodes or Hugo-only front matter in `website/` or `docs/`
+  (`git ls-files`, `git grep`); `hugo:*` targets and scripts gone. `hugo.yml` goes in Phase 4.
+- **4:** `website/` holds content and config only (pages, images, `pattern-dump.config.ts`, `head.hbs`,
+  `package.json`, `project.json`, the theme submodule, the logs); every page renders through the theme's
+  layouts. Parity per page type: F-30 (side by side in `<baseline>/phase2/parity/side-by-side/`).
+- **6:** clean clone at the branch tip with `website/` deleted, Node 20
+  (`<baseline>/scripts/independence-packages.sh 20 indep-node20 d06debf21`, `<baseline>/logs/independence-node20.log`; `d06debf21` was the tip before 2.7 and 2.9 were
+  recommitted, and `git diff d06debf21 27ac7c18a` outside `website/` and `.gitmodules` is empty):
+  same as the baseline (0.4): `npm ci` 0, Pattern Lab 335 built / 31 hidden, `build:package` exit 1 (F-09),
+  compiled CSS `77f9411424e644d12315fb21d3b0a8386f0bc76df5fd201119889f61a36ad517`, both `npm pack` file
+  lists identical, the same failing test files, Storybook 461 files; the builds write only to `docs/` and
+  `packages/htwoo-core/`. `git grep` of `website/` and the theme for `@n8d/htwoo-core`, `htwoo-core/src|lib|dist`
+  or `../htwoo-core`: none.
+- **7:** `pd dev` in `website/`, `/getting-started/` open (`<baseline>/scripts/hot-reload.cjs`): an edit of the
+  theme submodule's `src/styles/partials/nav.scss` reached the page in 408 ms (`.menu-link` 19.2px → 38.4px)
+  and its revert in 204 ms; an edit of `partials/header/header.hbs` in 409 ms, revert 204 ms; the server's
+  process id unchanged; the submodule clean afterwards.
+- **F-28:** a swup transition brings the next page's stylesheets (`<baseline>/scripts/swup-check.cjs`).
+- Not yet: the full `pd build` (F-03 root files in the head, F-33 badges, then Phase 3).
 
 ## Appendix: baseline URL lists (Node 20 build at the base SHAs)
 
