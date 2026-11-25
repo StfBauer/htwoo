@@ -40,12 +40,23 @@ the rehearsal setup.
 | F-27 | [PD-GAP] | theme | `{{pd-image}}` takes no `class` | workaround (`PD-WORKAROUND: F-27`) |
 | F-28 | [SUBJECT-DEBT] | theme | swup page transitions assume one stylesheet for every page | fixed in theme, verified (Phase 2) |
 | F-29 | [SUBJECT-DEBT] | theme | Accessibility defects PD's build would refuse: unnamed logo and supporter links, nested `<main>` | fixed in theme |
-| F-30 | [SUBJECT-DEBT] | theme | Visual differences the skin introduces on purpose or by PD's markup | parity checked (Phase 2): list in the block |
+| F-30 | [SUBJECT-DEBT] | theme | Visual differences the skin introduces on purpose or by PD's markup | parity checked (Phase 2): list in the block; copy button styled |
 | F-31 | [SUBJECT-DEBT] | htwoo | about, why-htwoo, roadmap and flavor are `noindex`, probably unintended | open: Stefan decides later |
 | F-32 | [PD-GAP] | htwoo | An image between two variant widths shows at the smaller variant, not its own width | open |
-| F-33 | [PD-GAP] | htwoo | An external image in markdown can't get a width and height: `pd build` stops on it | open, blocks the full `pd build` |
-| F-34 | [PD-GAP] | htwoo | Content image and theme asset URLs change (`/images/…`, `/how-to/*.png`, `/js/main.js`, `/assets/css/main.*.css`) | open: decision |
-| F-35 | [SUBJECT-DEBT] | htwoo | The bump commit format `chore(deps): bump …` breaks commitlint's sentence-case subject rule | open: decision before Phase 4 |
+| F-33 | [PD-GAP] | htwoo | An external image in markdown can't get a width and height: `pd build` stops on it | workaround: sized `badge` component in the theme |
+| F-34 | [PD-GAP] | htwoo | Content image and theme asset URLs change (`/images/…`, `/how-to/*.png`, `/js/main.js`, `/assets/css/main.*.css`) | won't fix: new URLs accepted |
+| F-35 | [SUBJECT-DEBT] | htwoo | The bump commit format `chore(deps): bump …` breaks commitlint's sentence-case subject rule | fixed: format `chore(deps): Bump …` |
+
+## Upstream fixes (hTWOo, outside this migration)
+
+Problems this rehearsal found in hTWOo itself. They stay upstream debt: the migration works around none of
+them, and each needs its own fix in n8design/htwoo.
+
+| Finding | What to fix | Cause |
+|---|---|---|
+| F-09 | `npm run build:package -w htwoo-core` fails | `copy:css` copies `public/css/htwoo.min.css`; ice-build writes `public/css/htwoo.css` |
+| F-10 | Nx loads no `project.json`: every root `nx run <project>:…` script fails | the root `.gitignore` has `**/project.json` (line 128), and Nx leaves out what git ignores |
+| F-12 | npm's `@n8d/htwoo-core` 2.9.x isn't in `main` (2.7.3) | released from branches not merged into `main` (2.9.2: upstream `81c88be`, PR #187) |
 
 ---
 
@@ -626,9 +637,11 @@ the rehearsal setup.
     top-level entry (it compared the entry's URL plus `/` with the page's, which never matched).
   - Listings show the title only, not `0001-01-01 | <title>`; order kept (`order:` in the folder pages).
   - Code blocks: Shiki's tokens in the Monokai colours instead of Chroma's (shell commands are coloured
-    now, plain on the Hugo site); Pattern Dump adds a **Copy** button above each block, which the theme
-    doesn't style yet (a default button that pushes the block down by its height). Proposed: a theme rule
-    placing it in the block's corner (Stefan decides).
+    now, plain on the Hugo site); Pattern Dump adds a **Copy** button to each block. Decided 2026-11-25:
+    styled in the theme, in the block's top-right corner, as quiet text (theme `e5cb564`, `2b7fd50`):
+    the block's text colour at 70 %, full and underlined on hover and focus, focus ring `--c-p2-60`
+    (3.95:1 on the block; `--c-p2-00` is 2.64:1). To keep it clear of the first line at every width and
+    text size, a block with the button is 1.25rem taller than on the Hugo site (top padding 2.25rem).
   - Images in a page's markdown: WebP variants with `width` and `height`; shown at the largest variant not
     wider than the image (F-32), so the how-to screenshots are narrower; left-aligned in the column.
     A titled image on its own line is a `<figure>` with the title as a visible caption ("Standard Button",
@@ -680,7 +693,8 @@ the rehearsal setup.
 
 ### F-33 [PD-GAP] An external image in markdown can't get a width and height
 
-- Status: open; blocks the full `pd build` (Phase 3) unless decided
+- Status: workaround, decided 2026-11-25: a sized badge component in the theme; the badges keep loading
+  from shields.io
 - Phase: 2
 - Repo and commit: htwoo `b8945459e`, PD 0.9.0
 - Where: `website/pages/concepts.md`: three shields.io badges (`![100% Fluent Design](https://img.shields.io/badge/Fluent-blue)`,
@@ -693,11 +707,16 @@ the rehearsal setup.
 - Proposed fix: in PD: read the size of an external SVG/raster at build time, or let a markdown image carry
   `{width=… height=…}`. Workarounds (Stefan decides): host the three badges in the website's images (the
   license badge then stops updating itself), or a `pd-` component with a size.
+- Done: theme `4cff14a` `components/badge` (`src`, `alt`, `width`, `height`, optional `link`) and
+  `components/badges` (a row, one paragraph); htwoo `da077151d` places them in `concepts.md` with the sizes
+  the SVGs declare (45×20, 180×20, 78×20), the first linked as before. `pd dev` now only notes them
+  ("an external image … served as it is"); no size problem left for `pd build`. Checked in Chromium at
+  1280 and 390px, text at 100 and 200 %: one row, the first linked (`<baseline>/phase2/after-decisions/`).
 - Applies upstream: yes
 
 ### F-34 [PD-GAP] Content image and theme asset URLs change
 
-- Status: open: decision
+- Status: won't fix: decided 2026-11-25, the new image URLs are accepted (the theme bundles too)
 - Phase: 2
 - Repo and commit: htwoo `27ac7c18a`, PD 0.9.0
 - Reproduce: every live URL with status 200 outside `/components/`, `/htwoo-core/`, `/htwoo-react/`, the feeds
@@ -722,7 +741,9 @@ the rehearsal setup.
 
 ### F-35 [SUBJECT-DEBT] The bump commit format breaks commitlint's subject rule
 
-- Status: open: decision before Phase 4 (the deploy workflow writes these commits)
+- Status: fixed: decided 2026-11-25, the bump subject follows the repo's rule,
+  `chore(deps): Bump htwoo-theme to <short sha>`; commitlint unchanged. The replay log's format is updated;
+  `27ac7c18a` (lowercase, already pushed) stays as it is, `ad7865970` is the first in the new format.
 - Phase: 2
 - Repo and commit: htwoo `27ac7c18a` (`chore(deps): bump htwoo-theme to 74bb212`)
 - Reproduce: `echo 'chore(deps): bump htwoo-theme to 74bb212' | npx commitlint` with the repo's

@@ -445,7 +445,8 @@ their check is the moved files (`git show --stat`) and that htwoo-core and htwoo
 
 ### 2.9 `27ac7c18a` chore(deps): bump htwoo-theme to 74bb212 (htwoo)
 
-- Submodule `website/theme` `837a705` → `74bb212` (the brief's bump format; F-35).
+- Submodule `website/theme` `837a705` → `74bb212` (the brief's bump format at the time; F-35 changed it,
+  see 2.12).
 - Check: `git submodule status` → `74bb212…`; website check below.
 
 ### 2.10 Logs and the fork commit (htwoo)
@@ -481,6 +482,38 @@ their check is the moved files (`git show --stat`) and that htwoo-core and htwoo
   process id unchanged; the submodule clean afterwards.
 - **F-28:** a swup transition brings the next page's stylesheets (`<baseline>/scripts/swup-check.cjs`).
 - Not yet: the full `pd build` (F-03 root files in the head, F-33 badges, then Phase 3).
+
+### 2.12 Decisions after Phase 2 (htwoo-theme, htwoo)
+
+Decided 2026-11-25: F-33 a sized badge component in the theme, badges loading from shields.io; F-34 the
+new image URLs accepted; F-35 the bump subject follows the repo's commit rules, commitlint unchanged; F-30
+the copy button styled in the theme, in the block's corner (look chosen from three options: quiet text).
+
+**Bump commit format, updated (replaces the brief's `chore(deps): bump htwoo-theme to <short sha>`):**
+`chore(deps): Bump htwoo-theme to <short sha>`. Phase 4's deploy workflow writes this subject.
+
+- `4cff14a` feat(skin): Add the badge and badges components (htwoo-theme): `components/badge` (`src`, `alt`,
+  `width`, `height`, optional `link`), `components/badges` (one row, one paragraph).
+- `e5cb564` feat(skin): Style the code blocks' copy button (htwoo-theme).
+- `2b7fd50` fix(skin): Keep the copy button inside the block and clear of the code (htwoo-theme): found in
+  the browser check (at 1280px the button sat on the block's top edge; on a phone at 200 % text it covered
+  the first line).
+- Check (htwoo-theme): `<baseline>/scripts/verify-theme.sh 74bb212 2b7fd50`: `npm ci` 0, build 0
+  (16 components) for all three; HEAD typecheck 0, audit 0 defects across 18 components; the theme's
+  diff searched for `border-radius`, `box-shadow`, gradients, `backdrop-filter`, blur, `translateY`,
+  `transition`, `scale(`, hex colours, `px` and `!important` in added lines: none.
+- `ad7865970` chore(deps): Bump htwoo-theme to 2b7fd50 (htwoo): submodule `74bb212` → `2b7fd50`.
+- `da077151d` refactor(website): Place the concepts badges with the badges component (htwoo).
+- Check (htwoo): `pd dev`: the badges render as `<p><a href="https://www.youtube.com/…"><img … width="45"
+  height="20"></a> <img … width="180" height="20"> <img … width="78" height="20"> </p>`, noted as external
+  images only. In Chromium (`<baseline>/scripts/copy-badge-check.cjs`, pages loaded as `https://htwoo.io/…`
+  from `pd dev`), at 1280×900 and 390×844, text at 100 and 200 %: the copy button in the block's top-right
+  corner and clear of the first line, 70 % text colour, `Tab` reaches it with an underline and a
+  `--c-p2-60` ring, `Enter` copies ("Copied"); the badges in one row (wrapping to two only on a phone at
+  200 % text), the first linked. Screenshots: `<baseline>/phase2/after-decisions/`.
+- Logs: `docs(website): Update the migration logs after the phase 2 decisions`; then the fork-only commit
+  moved back to the tip (rebase, force-push of `pd-migration`).
+- Upstream fix list (findings, top): F-09, F-10 (cause: `**/project.json` in `.gitignore`), F-12.
 
 ## Appendix: baseline URL lists (Node 20 build at the base SHAs)
 
