@@ -515,6 +515,26 @@ the copy button styled in the theme, in the block's corner (look chosen from thr
   moved back to the tip (rebase, force-push of `pd-migration`).
 - Upstream fix list (findings, top): F-09, F-10 (cause: `**/project.json` in `.gitignore`), F-12.
 
+## Phase 3: the mounts and the full build (htwoo, `website/`; htwoo-theme)
+
+Started 2026-11-26 with Pattern Dump 0.10.0 (npm, released 2026-11-26; tag `v0.10.0` = `78ed7af`), whose
+CHANGELOG lists `site.mounts` ("A site can publish another tool's finished files at a route"); the Mounts
+guide read at the tag (`git show v0.10.0:docs/guide/storefront.md`, section Mounts).
+
+**Fork commit, from now on:** `chore(fork): Point the theme submodule at the htwoo-theme fork` (`bb859e339`)
+stays where it is; new commits go on top of it, pushed without force. It moves to the tip once, right before
+the upstream PR (decided 2026-11-25, after 2.12).
+
+### 3.1 `e34eea970` chore(deps): Bump pattern-dump to 0.10.0 in the website (htwoo)
+
+- `website/package.json` `pattern-dump` `0.9.0` → `0.10.0` (exact), `npm install --save-exact`. The lockfile
+  keeps a second copy, PD 0.9.0 under `theme/node_modules/`, because the theme still pins 0.9.0 as a
+  devDependency; it goes with the theme's own bump (below).
+- Check (`<baseline>/scripts/verify-website.sh bb859e339 e34eea970`, one run each): `npm ci` 0 for both; 35 of
+  35 pages 200 for both; site warnings 176 → 181. The 5 new ones are the built-in 404 page's menu links,
+  which 0.10.0 checks too: `/htwoo-core/`, `/htwoo-react/`, the icons page under `/htwoo-core/` (the mounts
+  below) and the two changelog pages (F-02). The rest of the `pd dev` log is unchanged.
+
 ## Appendix: baseline URL lists (Node 20 build at the base SHAs)
 
 Every live 200 URL is in this build (0.3). Route lists below; `/htwoo-core/`, `/htwoo-react/` and the
