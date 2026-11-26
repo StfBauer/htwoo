@@ -5,7 +5,7 @@ name: Deploy the website
 
 on:
   push:
-    branches: [main]
+    branches: [pd-migration]
     paths:
       - "website/**"
       - "htwoo-core/**"
