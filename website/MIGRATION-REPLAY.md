@@ -12,7 +12,7 @@ Baseline artifacts: `/Volumes/Code/n8design/fork/htwoo-migration-baseline/` (bel
 | docs base SHA (`origin/docs`) | `bc889ced5f107e23d2df54cb624f7c48edba477d` |
 | theme base SHA (`origin/main` of htwoo-theme) | `2a8010a454cf18d19b549d93d7e4699a4c3aae1e` (as expected) |
 | Recorded | 2026-11-25 11:09 UTC, after `git fetch origin --prune` in both forks |
-| Pattern Dump | `0.9.0` (npm `latest` at start; tag `v0.9.0` = `3e025298a`); `0.10.0` from Phase 3 (tag `v0.10.0` = `78ed7af`) |
+| Pattern Dump | `0.9.0` (npm `latest` at start; tag `v0.9.0` = `3e025298a`); `0.10.0` from Phase 3 (tag `v0.10.0` = `78ed7af`); `0.10.1` from Phase 4 (tag `v0.10.1` = `a0251b1`) |
 | Baseline toolchain | Node 20.20.2, npm 10.8.2 (what `setup-node@v4` `'20'` resolves to); Hugo 0.108.0 extended; dart-sass-embedded 1.62.1 |
 | New work toolchain | Node 24.22.3, npm 11.19.1 |
 | OS | macOS 27.2.1 (26B131), arm64 |
@@ -717,7 +717,7 @@ Design:
 
 ### 4.7 Waiting for the first deploy run
 
-In this order, once PD 0.10.1 is out:
+Steps 2 and 3 are done (4.8 to 4.10). Left, in this order:
 
 1. F-25 on GitHub: `pd-migration` in `StfBauer/htwoo`'s `github-pages` environment; `HTWOO_DISPATCH_TOKEN` in
    `StfBauer/htwoo-theme` with Actions: read and write on `StfBauer/htwoo`. Recheck with the two `gh api`
@@ -736,6 +736,52 @@ In this order, once PD 0.10.1 is out:
    - manual run: …
 5. Acceptance 10 on `https://stfbauer.github.io/htwoo/`: cache-bypassing `curl` for status codes and served
    CSS, then the rendered DOM after a hard refresh.
+
+### 4.8 `ead30d2` chore(deps): Pin pattern-dump to 0.10.1 (htwoo-theme)
+
+- PD 0.10.1 on npm 2026-11-26 21:40 UTC; its CHANGELOG fixes F-36 (no `site.workbenchUrl` needed without a
+  workbench) and F-37 (a mount may publish under `/assets/` where the project has no asset of that name).
+- Theme `package.json` devDependency `0.10.0` → `0.10.1` (exact).
+- Check: `<baseline>/scripts/verify-theme.sh bfe8a38 ead30d2`: `npm ci` 0, build 0 (16 components → 126 files),
+  typecheck 0, audit 0 defects (all 18 results from the cache: no component changed); commitlint 0.
+
+### 4.9 `0405903fa` chore(deps): Bump pattern-dump to 0.10.1 in the website (htwoo)
+
+- `website/package.json` `0.10.0` → `0.10.1` (exact). As in 3.1 the lockfile keeps 0.10.0 under
+  `theme/node_modules/` until the theme bump. commitlint 0.
+
+### 4.10 `ca2933032` chore(deps): Bump htwoo-theme to ead30d2 (htwoo)
+
+- Submodule `website/theme` `63e7e04` → `ead30d2` (with 4.4, 4.5, 4.8; fetched from the local theme fork, which
+  isn't pushed yet); the lockfile drops the second copy of PD. commitlint 0.
+- Check, the full build (`<baseline>/scripts/phase4-full-build.sh ca2933032 phase4-full`: clean clone, the
+  submodule from the local theme fork, the deploy workflow's commands in order on Node 24.22.3), no stand-ins:
+  `npm ci` 0, `pl:publish-docs` 0, `build-storybook` 0, website `npm ci` 0, `pd build` 0. 2205 files (Phase 3's
+  2204 plus the frozen stylesheet), no symlinks or hard links; `mounts: 2134 files (69.5 MB)`, `/assets/css/` 1
+  file; `accessibility: 35 pages, no errors`; `workbench: not built (build.workbench: false), and the pages link
+  to none`; `/sitemap.xml` 277 URLs; `robots.txt` naming it. Log: `<baseline>/work/phase4-full/build.log`.
+- **Acceptance 1** (`acceptance1.py`, `<baseline>/logs/phase4-acceptance1.log`): built baseline 2262 paths,
+  1708 served at their paths plus the 461 of `/htwoo-react/` by count and story list, 93 not served (F-02 3,
+  F-05 2, F-06 6, F-34 24, `/884619/` 58). Live 389: 371 served, 18 not (F-02 3, F-05 2, F-06 6, F-34 7). The
+  F-37 line is gone from both lists. New in the output: `/.nojekyll`, `/404.html`, `/htwoo-core/sitemap.xml`
+  (F-05, stays), `/llms.txt`.
+- **404-page warnings** (3.1, `<baseline>/scripts/phase4-dev-check.sh phase4-full`): `pd dev` in the clone with
+  the parts built: 0 site warnings; `/htwoo-core/`, `/htwoo-react/`, the icons page, `/components/` and
+  `/assets/css/main.49c0….css` 200, `/no-such-page/` 404. The two changelog links are external since 3.7. No new
+  `[PD-GAP]`. (A plain clone without the parts built still warns about the missing targets, correctly.)
+- **Fork base path**, same clone, `SITE_URL=https://stfbauer.github.io/htwoo/ npm run build`
+  (`<baseline>/work/build-fork.log`): exit 0, "served from /htwoo/"; site links and assets written
+  `/htwoo/…`; no `robots.txt` (F-24). In the mounted parts: Storybook and the frozen pages write no
+  root-absolute paths; Pattern Lab writes two, `/ice-hotreloader/…` on 381 pages (F-38) and the modal dialog
+  iframe's `/patterns/…` (F-41, a 404 on htwoo.io too). The frozen pages resolve against
+  `https://htwoo.io/` (F-42).
+- **Acceptance 8:** green for the output and the workflow. The run waits for F-25.
+- F-01, F-03: fixed in PD 0.10.0, completed by 0.10.1 (F-37). F-36, F-37: fixed in PD 0.10.1.
+
+### 4.11 Logs (htwoo)
+
+- `docs(website): Log the PD 0.10.1 full build`: 4.8 to 4.11; findings F-01, F-03, F-36, F-37 closed, F-25
+  rechecked (21:47 UTC: environment `main` only, theme 0 secrets), new F-41, F-42.
 
 ## Appendix: baseline URL lists (Node 20 build at the base SHAs)
 

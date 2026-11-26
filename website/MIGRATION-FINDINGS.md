@@ -11,9 +11,9 @@ the rehearsal setup.
 
 | ID | Tag | Repo | Title | Status |
 |---|---|---|---|---|
-| F-01 | [PD-GAP] | htwoo | Site config can't place another tool's build output at a site path | fix in PD 0.10.0 (`site.mounts`), verified in a test build; closes as "fixed in PD 0.10.0, completed by 0.10.1 (F-37)" when the full build passes |
+| F-01 | [PD-GAP] | htwoo | Site config can't place another tool's build output at a site path | fixed in PD 0.10.0, completed by 0.10.1 (F-37) |
 | F-02 | [PD-GAP] | htwoo | Site pages can't come from markdown outside `pagesDir` (package changelogs) | open: PD feature (Stefan); menu links to the changelogs on GitHub meanwhile (Phase 3) |
-| F-03 | [PD-GAP] | htwoo | Root-level static files can't be served at their paths (`/889032/`, favicons, manifest) | fix in PD 0.10.0 (`site.mounts`, theme `site-root/` at `/`), verified as F-01; closes with F-01, same wording |
+| F-03 | [PD-GAP] | htwoo | Root-level static files can't be served at their paths (`/889032/`, favicons, manifest) | fixed in PD 0.10.0, completed by 0.10.1 (F-37) |
 | F-04 | [PD-GAP] | htwoo | Raw HTML in page markdown is shown as text (Hugo renders it: `unsafe: true`) | workaround: home markup in the theme (Phase 1); content in Phase 2 |
 | F-05 | [PD-GAP] | htwoo | Sitemap file names and the sitemap index are fixed (`/sitemap-pages.xml`, `/components-sitemap.xml`) | won't fix: dropped, PD's `/sitemap.xml` kept (decision 3); `/htwoo-core/sitemap.xml` stays as Pattern Lab writes it |
 | F-06 | [PD-GAP] | htwoo | No RSS feeds: 48 `index.xml` URLs have no equivalent | won't fix: dropped (decision 3) |
@@ -35,7 +35,7 @@ the rehearsal setup.
 | F-22 | [SUBJECT-DEBT] | htwoo | Front matter that Hugo ignored or that PD will refuse | open |
 | F-23 | [FORK-ONLY] | htwoo | typography.com refuses the fork's host: brand fonts don't load on `stfbauer.github.io` | open; parity checked locally (decision) |
 | F-24 | [FORK-ONLY] | htwoo | Under the `/htwoo/` base path PD writes no `robots.txt` | open |
-| F-25 | [FORK-ONLY] | htwoo, theme | Fork setup gaps: Pages environment allows `main` only; `HTWOO_DISPATCH_TOKEN` missing | open: reported done 2026-11-26, not visible on GitHub at 15:33 UTC; needed before the first deploy run |
+| F-25 | [FORK-ONLY] | htwoo, theme | Fork setup gaps: Pages environment allows `main` only; `HTWOO_DISPATCH_TOKEN` missing | open: not visible on GitHub at 21:47 UTC either; blocks the first deploy run |
 | F-26 | [PD-GAP] | htwoo, theme | A navigation entry can't be a page with children, nor list a folder's pages | open; menu by hand in `site.globals` |
 | F-27 | [PD-GAP] | theme | `{{pd-image}}` takes no `class` | workaround (`PD-WORKAROUND: F-27`) |
 | F-28 | [SUBJECT-DEBT] | theme | swup page transitions assume one stylesheet for every page | fixed in theme, verified (Phase 2) |
@@ -46,11 +46,13 @@ the rehearsal setup.
 | F-33 | [PD-GAP] | htwoo | An external image in markdown can't get a width and height: `pd build` stops on it | workaround: sized `badge` component in the theme |
 | F-34 | [PD-GAP] | htwoo | Content image and theme asset URLs change (`/images/…`, `/how-to/*.png`, `/js/main.js`, `/assets/css/main.*.css`) | won't fix: new URLs accepted |
 | F-35 | [SUBJECT-DEBT] | htwoo | The bump commit format `chore(deps): bump …` breaks commitlint's sentence-case subject rule | fixed: format `chore(deps): Bump …` |
-| F-36 | [PD-GAP] | htwoo | `pd build` requires `site.workbenchUrl` with `build.workbench: false`, and refuses a mount at it | open: PD 0.10.1 (Stefan); the website has none (Phase 3) |
-| F-37 | [PD-GAP] | htwoo | A mount can't publish a file under `/assets/`, even with no site file at that path | open: PD 0.10.1 (Stefan), with F-36; frozen pages not rewritten |
+| F-36 | [PD-GAP] | htwoo | `pd build` requires `site.workbenchUrl` with `build.workbench: false`, and refuses a mount at it | fixed in PD 0.10.1 |
+| F-37 | [PD-GAP] | htwoo | A mount can't publish a file under `/assets/`, even with no site file at that path | fixed in PD 0.10.1 |
 | F-38 | [SUBJECT-DEBT] | htwoo | Pattern Lab's pages load the dev script `/ice-hotreloader/dist/browser.min.js` in production | open |
 | F-39 | [FORK-ONLY] | htwoo, theme | The deploy and notify workflows run on the fork's branches (`pd-migration`, `pd`) | open: drop both `chore(fork)` commits before the PRs |
 | F-40 | [SUBJECT-DEBT] | htwoo | htwoo-core's `docs:components` still writes Hugo content and layouts that nothing builds | open: htwoo-core step |
+| F-41 | [SUBJECT-DEBT] | htwoo | The modal dialog iframe pattern loads its page from the host's root: 404 | open |
+| F-42 | [FORK-ONLY] | htwoo | On the fork the frozen `/components/` pages load and link htwoo.io's files (`<base href>`) | open; correct after the switch |
 
 ## Upstream fixes (hTWOo, outside this migration)
 
@@ -68,21 +70,10 @@ them, and each needs its own fix in n8design/htwoo.
 
 ### F-01 [PD-GAP] Site config can't place another tool's build output at a site path
 
-- Status: fix in PD 0.10.0 (`site.mounts`, released 2026-11-26), verified in Phase 3 with a test build
-  (below); closes once the website's full `pd build` passes, which waits for 0.10.1 (F-36, F-37), and is
-  recorded then as "fixed in PD 0.10.0, completed by 0.10.1 (F-37)" (decided 2026-11-26). Decided 2026-11-25: a PD feature (mount a folder at a route, `/` included), built by
-  Stefan in PD, covering F-03 too.
-- Phase 3 (htwoo `84ef52e6a`, PD 0.10.0): `site.mounts` in `website/pattern-dump.config.ts` publishes
-  `../docs/htwoo-core` at `/htwoo-core/` (Pattern Lab, built fresh with `pl:publish-docs`, as CI does),
-  `../docs/htwoo-react` at `/htwoo-react/` (`build-storybook`), the frozen component docs (`website/frozen/`,
-  one mount per folder) and the theme's `site-root/` at `/`. Test build in a clean clone with two edits that
-  stand in for 0.10.1, never committed (a placeholder `workbenchUrl`, the `/assets/css/` mount left out):
-  passes; `mounts: 2133 files (69.4 MB)`; every mounted file byte-identical to its source (`diff -rq`);
-  `/htwoo-core/` 1310 files = the baseline's 1309 + `sitemap.xml` (the old workflow deleted it), path list
-  hash as the baseline; `css/htwoo.min.css` `39735ed4…` as deployed today; `/htwoo-react/` 461 files, 300
-  stories, story list hash as the baseline. `pd dev` serves every mount, `/htwoo-core` forwards to
-  `/htwoo-core/`. Two mounts can't share a route (`"site.mounts[3].to": "/" is site.mounts[2]'s route
-  too`), so the frozen copy has one mount per folder.
+- Status: fixed in PD 0.10.0, completed by 0.10.1 (F-37). Decided 2026-11-25: a PD feature (mount a
+  folder at a route, `/` included), built by Stefan in PD, covering F-03 too.
+  Proved 2026-11-26 (Phase 4): full `pd build` on PD 0.10.1 at htwoo `ca2933032` (theme `ead30d2`), clean
+  clone, no stand-ins: exit 0, 2205 files, `mounts: 2134 files`; Acceptance 1 as in replay 4.10.
 - Phase: 0
 - Repo and commit: htwoo `2297b8114` (spike outside the repo), PD 0.9.0, Node 24.22.3, macOS 27.2.1
 - Where: the site config `website/pattern-dump.config.ts` (planned); targets `/htwoo-core/`, `/htwoo-react/`,
@@ -150,9 +141,8 @@ them, and each needs its own fix in n8design/htwoo.
 
 ### F-03 [PD-GAP] Root-level static files can't be served at their paths
 
-- Status: fix in PD 0.10.0: the theme's `site-root/` mounted at `/` (65 files: the icons, the manifest,
-  `/889032/`), served by `pd dev` and written by the test build (F-01, Phase 3). Closes with F-01, recorded the
-  same way: "fixed in PD 0.10.0, completed by 0.10.1 (F-37)" (decided 2026-11-26).
+- Status: fixed in PD 0.10.0, completed by 0.10.1 (F-37): the theme's `site-root/` mounted at `/` (65
+  files: the icons, the manifest, `/889032/`), served by `pd dev` and written by the full build (F-01).
 - Phase: 0
 - Repo and commit: htwoo docs `bc889ced5`, theme `2a8010a`, PD 0.9.0
 - Where: `/889032/*.css` and fonts, `/favicon.ico`, `/favicon-16x16.png`, `/favicon-32x32.png`,
@@ -556,7 +546,7 @@ them, and each needs its own fix in n8design/htwoo.
 ### F-25 [FORK-ONLY] Fork setup gaps
 
 - Status: open. Reported done 2026-11-26 (`pd-migration` added to the `github-pages` environment,
-  `HTWOO_DISPATCH_TOKEN` set in the theme fork), but neither shows on GitHub at 15:33 UTC (recheck below).
+  `HTWOO_DISPATCH_TOKEN` set in the theme fork), but neither shows on GitHub at 15:33 UTC or 21:47 UTC (recheck below).
   Needed before the first deploy run, not before the Phase 4 commits.
 - Phase: 0
 - Reproduce:
@@ -797,10 +787,8 @@ them, and each needs its own fix in n8design/htwoo.
 
 ### F-36 [PD-GAP] `pd build` requires `site.workbenchUrl` when no workbench is built
 
-- Status: open. Decided 2026-11-26: a patch for PD 0.10.1 (Stefan): `site.workbenchUrl` is optional when
-  `build.workbench` is `false`, and without it `robots.txt` gets no workbench `Disallow` line. Spec shown
-  failing on a fresh `dist/` first. The website has no `workbenchUrl` (htwoo `dec8d6628`); its full
-  `pd build` waits for 0.10.1.
+- Status: fixed in PD 0.10.1 (tag `v0.10.1` = `a0251b1`): without `site.workbenchUrl` the build logs
+  `workbench: not built (build.workbench: false), and the pages link to none`; full build exit 0 (F-01).
 - Phase: 3
 - Repo and commit: htwoo `dec8d6628`, PD 0.10.0, Node 24.22.3, macOS 27.2.1
 - Where: `website/pattern-dump.config.ts` (`build: { workbench: false }`, no `site.workbenchUrl`)
@@ -819,8 +807,8 @@ them, and each needs its own fix in n8design/htwoo.
 
 ### F-37 [PD-GAP] A mount can't publish a file under `/assets/`
 
-- Status: open. Decided 2026-11-26: a PD fix in 0.10.1 with F-36 (Stefan): a mounted file under
-  `/assets/` is allowed when no file the site writes has that path. The frozen pages aren't rewritten.
+- Status: fixed in PD 0.10.1: `/assets/css/main.49c0….css` is written by the full build and served by
+  `pd dev` (200). The frozen pages aren't rewritten (decided 2026-11-26).
 - Phase: 3
 - Repo and commit: htwoo `5ed46bed9`, PD 0.10.0
 - Where: `website/frozen/assets/css/main.49c0f006c92f78b9963202d0d83b7f531d56bfe6586ee39eb695d8c52bdfb531.css`,
@@ -892,3 +880,35 @@ them, and each needs its own fix in n8design/htwoo.
 - Proposed fix: in hTWOo, with the htwoo-core step: remove `docs:components`, its `hugo-layouts` and the
   tracked `docs/htwoo-components/`, when the kiosk replaces `/components/`.
 - Applies upstream: yes
+
+### F-41 [SUBJECT-DEBT] The modal dialog iframe pattern loads its page from the host's root
+
+- Status: open (htwoo-core is read-only in this step)
+- Phase: 4
+- Repo and commit: htwoo `ca2933032` (htwoo-core unchanged since `2297b8114`)
+- Where: Pattern Lab's `organism-dialogs-modal-dialog-iframe` (rendered, markup-only) and `patterns/molecules/`:
+  `src="/patterns/pages-teams-teams-splash-screen/pages-teams-teams-splash-screen.rendered.html"`
+- Reproduce: `npm run pl:publish-docs -w htwoo-core`, then
+  `grep -rl 'src="/patterns/pages-teams' docs/htwoo-core --include=*.html`;
+  `curl -s -o /dev/null -w '%{http_code}' https://htwoo.io/patterns/pages-teams-teams-splash-screen/pages-teams-teams-splash-screen.rendered.html`
+- Expected: the iframe shows the splash screen page, which htwoo.io serves under `/htwoo-core/patterns/…` (200).
+- Actual: 404 on htwoo.io today, and the same after the migration (the mount publishes Pattern Lab's files as
+  written).
+- Proposed fix: in hTWOo: a path relative to the pattern in the iframe's `src`.
+- Applies upstream: yes
+
+### F-42 [FORK-ONLY] On the fork the frozen component pages use htwoo.io's files
+
+- Status: open (correct on htwoo.io after the switch)
+- Phase: 4
+- Repo and commit: htwoo `ca2933032`
+- Where: `website/frozen/components/**`: `<base href=https://htwoo.io/components/…>` on every page (3.4)
+- Reproduce: full build with `SITE_URL=https://stfbauer.github.io/htwoo/`, then
+  `grep -o '<base[^>]*>' website/site/components/index.html`.
+- Expected on the fork: the pages load their stylesheet and scripts from `/htwoo/…` and link within the fork.
+- Actual: they load and link `https://htwoo.io/…`, so the fork shows production's copies (equal to the frozen
+  files until the switch). Acceptance 10 on the fork checks `/components/` by status code and the rendered DOM;
+  the files they load are checked on htwoo.io after the switch.
+- Cause: the frozen pages aren't rewritten (decided 2026-11-26).
+- Proposed fix: fork-only
+- Applies upstream: no (fork-only)
