@@ -11,11 +11,11 @@ the rehearsal setup.
 
 | ID | Tag | Repo | Title | Status |
 |---|---|---|---|---|
-| F-01 | [PD-GAP] | htwoo | Site config can't place another tool's build output at a site path | fix in PD 0.10.0 (`site.mounts`), verified in a test build; fixed once the full build passes (waits for 0.10.1: F-36, F-37) |
+| F-01 | [PD-GAP] | htwoo | Site config can't place another tool's build output at a site path | fix in PD 0.10.0 (`site.mounts`), verified in a test build; closes as "fixed in PD 0.10.0, completed by 0.10.1 (F-37)" when the full build passes |
 | F-02 | [PD-GAP] | htwoo | Site pages can't come from markdown outside `pagesDir` (package changelogs) | open: PD feature (Stefan); menu links to the changelogs on GitHub meanwhile (Phase 3) |
-| F-03 | [PD-GAP] | htwoo | Root-level static files can't be served at their paths (`/889032/`, favicons, manifest) | fix in PD 0.10.0 (`site.mounts`, theme `site-root/` at `/`), verified as F-01 |
+| F-03 | [PD-GAP] | htwoo | Root-level static files can't be served at their paths (`/889032/`, favicons, manifest) | fix in PD 0.10.0 (`site.mounts`, theme `site-root/` at `/`), verified as F-01; closes with F-01, same wording |
 | F-04 | [PD-GAP] | htwoo | Raw HTML in page markdown is shown as text (Hugo renders it: `unsafe: true`) | workaround: home markup in the theme (Phase 1); content in Phase 2 |
-| F-05 | [PD-GAP] | htwoo | Sitemap file names and the sitemap index are fixed (`/sitemap-pages.xml`, `/components-sitemap.xml`) | won't fix: dropped, PD's `/sitemap.xml` kept (decision 3) |
+| F-05 | [PD-GAP] | htwoo | Sitemap file names and the sitemap index are fixed (`/sitemap-pages.xml`, `/components-sitemap.xml`) | won't fix: dropped, PD's `/sitemap.xml` kept (decision 3); `/htwoo-core/sitemap.xml` stays as Pattern Lab writes it |
 | F-06 | [PD-GAP] | htwoo | No RSS feeds: 48 `index.xml` URLs have no equivalent | won't fix: dropped (decision 3) |
 | F-07 | [PD-GAP] | theme | Listing entries can't carry a page's own fields (supporters' `logo`, `link`) | workaround: `site.globals.supporters` (decision 2) |
 | F-08 | [PD-GAP] | theme | Head items with no equivalent: `<base href>`, `meta keywords`, robots `nofollow` | won't fix: all three dropped (decisions 2026-11-25) |
@@ -35,7 +35,7 @@ the rehearsal setup.
 | F-22 | [SUBJECT-DEBT] | htwoo | Front matter that Hugo ignored or that PD will refuse | open |
 | F-23 | [FORK-ONLY] | htwoo | typography.com refuses the fork's host: brand fonts don't load on `stfbauer.github.io` | open; parity checked locally (decision) |
 | F-24 | [FORK-ONLY] | htwoo | Under the `/htwoo/` base path PD writes no `robots.txt` | open |
-| F-25 | [FORK-ONLY] | htwoo, theme | Fork setup gaps: Pages environment allows `main` only; `HTWOO_DISPATCH_TOKEN` missing | open: Stefan, before Phase 4 |
+| F-25 | [FORK-ONLY] | htwoo, theme | Fork setup gaps: Pages environment allows `main` only; `HTWOO_DISPATCH_TOKEN` missing | open: reported done 2026-11-26, not visible on GitHub at 15:33 UTC; needed before the first deploy run |
 | F-26 | [PD-GAP] | htwoo, theme | A navigation entry can't be a page with children, nor list a folder's pages | open; menu by hand in `site.globals` |
 | F-27 | [PD-GAP] | theme | `{{pd-image}}` takes no `class` | workaround (`PD-WORKAROUND: F-27`) |
 | F-28 | [SUBJECT-DEBT] | theme | swup page transitions assume one stylesheet for every page | fixed in theme, verified (Phase 2) |
@@ -49,6 +49,8 @@ the rehearsal setup.
 | F-36 | [PD-GAP] | htwoo | `pd build` requires `site.workbenchUrl` with `build.workbench: false`, and refuses a mount at it | open: PD 0.10.1 (Stefan); the website has none (Phase 3) |
 | F-37 | [PD-GAP] | htwoo | A mount can't publish a file under `/assets/`, even with no site file at that path | open: PD 0.10.1 (Stefan), with F-36; frozen pages not rewritten |
 | F-38 | [SUBJECT-DEBT] | htwoo | Pattern Lab's pages load the dev script `/ice-hotreloader/dist/browser.min.js` in production | open |
+| F-39 | [FORK-ONLY] | htwoo, theme | The deploy and notify workflows run on the fork's branches (`pd-migration`, `pd`) | open: drop both `chore(fork)` commits before the PRs |
+| F-40 | [SUBJECT-DEBT] | htwoo | htwoo-core's `docs:components` still writes Hugo content and layouts that nothing builds | open: htwoo-core step |
 
 ## Upstream fixes (hTWOo, outside this migration)
 
@@ -67,8 +69,8 @@ them, and each needs its own fix in n8design/htwoo.
 ### F-01 [PD-GAP] Site config can't place another tool's build output at a site path
 
 - Status: fix in PD 0.10.0 (`site.mounts`, released 2026-11-26), verified in Phase 3 with a test build
-  (below); moves to "fixed in PD 0.10.0" once the website's full `pd build` passes, which waits for 0.10.1
-  (F-36, F-37). Decided 2026-11-25: a PD feature (mount a folder at a route, `/` included), built by
+  (below); closes once the website's full `pd build` passes, which waits for 0.10.1 (F-36, F-37), and is
+  recorded then as "fixed in PD 0.10.0, completed by 0.10.1 (F-37)" (decided 2026-11-26). Decided 2026-11-25: a PD feature (mount a folder at a route, `/` included), built by
   Stefan in PD, covering F-03 too.
 - Phase 3 (htwoo `84ef52e6a`, PD 0.10.0): `site.mounts` in `website/pattern-dump.config.ts` publishes
   `../docs/htwoo-core` at `/htwoo-core/` (Pattern Lab, built fresh with `pl:publish-docs`, as CI does),
@@ -149,8 +151,8 @@ them, and each needs its own fix in n8design/htwoo.
 ### F-03 [PD-GAP] Root-level static files can't be served at their paths
 
 - Status: fix in PD 0.10.0: the theme's `site-root/` mounted at `/` (65 files: the icons, the manifest,
-  `/889032/`), served by `pd dev` and written by the test build (F-01, Phase 3). Moves to "fixed in PD
-  0.10.0" with F-01.
+  `/889032/`), served by `pd dev` and written by the test build (F-01, Phase 3). Closes with F-01, recorded the
+  same way: "fixed in PD 0.10.0, completed by 0.10.1 (F-37)" (decided 2026-11-26).
 - Phase: 0
 - Repo and commit: htwoo docs `bc889ced5`, theme `2a8010a`, PD 0.9.0
 - Where: `/889032/*.css` and fonts, `/favicon.ico`, `/favicon-16x16.png`, `/favicon-32x32.png`,
@@ -198,7 +200,7 @@ them, and each needs its own fix in n8design/htwoo.
 
 ### F-05 [PD-GAP] Sitemap file names and the sitemap index are fixed
 
-- Status: open
+- Status: won't fix: dropped (decided 2026-11-25)
 - Phase: 0
 - Repo and commit: htwoo `2297b8114`, docs `bc889ced5`, PD 0.9.0
 - Where: `/sitemap.xml` (an index today), `/sitemap-pages.xml` (287 URLs), `/components-sitemap.xml` (215),
@@ -213,6 +215,9 @@ them, and each needs its own fix in n8design/htwoo.
   parts' own). Or accept: resubmit sitemaps in the search consoles (Stefan decides).
 - Decided 2026-11-25: dropped; PD's `/sitemap.xml` stays. `/sitemap-pages.xml` and `/components-sitemap.xml`
   go away (resubmit in the search consoles at the switch).
+- Decided 2026-11-26: `/htwoo-core/sitemap.xml`, Pattern Lab's own (one URL, new in the output: `hugo.yml`
+  deleted it), stays. The mount publishes it byte for byte and nothing references it: it isn't in
+  `/sitemap.xml` or `robots.txt`.
 - Applies upstream: yes
 
 ### F-06 [PD-GAP] No RSS feeds
@@ -550,7 +555,9 @@ them, and each needs its own fix in n8design/htwoo.
 
 ### F-25 [FORK-ONLY] Fork setup gaps
 
-- Status: open (Stefan's settings, needed before Phase 4)
+- Status: open. Reported done 2026-11-26 (`pd-migration` added to the `github-pages` environment,
+  `HTWOO_DISPATCH_TOKEN` set in the theme fork), but neither shows on GitHub at 15:33 UTC (recheck below).
+  Needed before the first deploy run, not before the Phase 4 commits.
 - Phase: 0
 - Reproduce:
   - `gh api repos/StfBauer/htwoo/environments/github-pages/deployment-branch-policies` → `main` only
@@ -559,7 +566,12 @@ them, and each needs its own fix in n8design/htwoo.
     on the fork.
   - `gh api repos/StfBauer/htwoo-theme/actions/secrets` → 0 secrets; Part 1 step 0 expects
     `HTWOO_DISPATCH_TOKEN`.
+- Recheck 2026-11-26 15:33 UTC (Phase 4): `…/environments/github-pages` → `custom_branch_policies: true`,
+  `…/deployment-branch-policies` → `main (branch)` only; `gh api repos/StfBauer/htwoo-theme/actions/secrets`
+  → `total_count: 0` (no environment, Dependabot or Codespaces secrets either; none in `StfBauer/htwoo`).
 - Proposed fix: add `pd-migration` to the fork's `github-pages` environment branch policy; create the token.
+  The notify workflow runs htwoo's deploy workflow (`gh workflow run`), so the token needs Actions: read and
+  write on `StfBauer/htwoo` (fine-grained), or `repo` (classic).
 - Applies upstream: no (fork-only)
 
 ### F-26 [PD-GAP] A navigation entry can't be a page with children, nor list a folder's pages
@@ -844,4 +856,39 @@ them, and each needs its own fix in n8design/htwoo.
   in the Phase 0 screenshots)
 - Proposed fix: in hTWOo: write the script tag only for the dev server (`pl:serve`), not for
   `pl:publish-docs`. Not touched in this step (htwoo-core is read-only).
+- Applies upstream: yes
+
+### F-39 [FORK-ONLY] The deploy and notify workflows run on the fork's branches
+
+- Status: open (both `chore(fork)` commits are dropped before the upstream PRs, Part 1 step 2)
+- Phase: 4
+- Repo and commit: htwoo `ee6860fb0` (on `1f646d6b7`), theme `bfe8a38` (on `2ed2703`)
+- Where: htwoo `.github/workflows/deploy.yml` (`on.push.branches`); theme `.github/workflows/notify-htwoo.yml`
+  (`on.push.branches`, `HTWOO_REF`)
+- Reproduce: `git show ee6860fb0` in htwoo, `git show bfe8a38` in htwoo-theme.
+- Expected (upstream): htwoo deploys on a push to `main`; the theme notifies from `main` to htwoo's `main`.
+- Actual (fork): htwoo deploys on a push to `pd-migration`; the theme notifies from `pd` to `pd-migration`.
+- Cause: the rehearsal runs on the fork branches, and the fork's `main` stays equal to upstream.
+- Note: the theme starts htwoo's deploy with `workflow_dispatch` (it takes a branch) rather than
+  `repository_dispatch` (it only starts workflows on the default branch, whose fork copy has no deploy
+  workflow). The same call works upstream with `HTWOO_REF: main`. That a dispatch reaches a workflow that
+  exists only on `pd-migration` is proven by the first theme-trigger run (Acceptance 9).
+- Proposed fix: fork-only
+- Applies upstream: no (fork-only)
+
+### F-40 [SUBJECT-DEBT] htwoo-core's `docs:components` still writes Hugo content and layouts
+
+- Status: open (htwoo-core is read-only in this step; the kiosk step replaces it)
+- Phase: 4
+- Repo and commit: htwoo `6b95b4b7e`
+- Where: `htwoo-core/helpers/tools/generate-component-docs.js`, `htwoo-core/helpers/component-docs/hugo-layouts/`;
+  output in the tracked `docs/htwoo-components/` (`content/`, `layouts/components/list.html`, `single.html`,
+  `layouts/partials/component-styles.html`, `assets/js/`)
+- Reproduce: `git ls-files | grep -i hugo` lists the three `hugo-layouts` files;
+  `git ls-files docs/htwoo-components | grep layouts` lists the three layouts.
+- Expected: no Hugo left (Acceptance 2).
+- Actual: only `hugo.yml` ran `docs:components`; the deploy workflow doesn't, because `/components/` is the
+  frozen copy in `website/frozen/`. The script, its Hugo layouts and the tracked output stay unused.
+- Proposed fix: in hTWOo, with the htwoo-core step: remove `docs:components`, its `hugo-layouts` and the
+  tracked `docs/htwoo-components/`, when the kiosk replaces `/components/`.
 - Applies upstream: yes

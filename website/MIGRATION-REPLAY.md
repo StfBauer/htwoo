@@ -626,6 +626,117 @@ final full `pd build` runs once 0.10.1 is out. Until then the build is proven in
 - F-01 and F-03 move to "fixed in PD 0.10.0" when that run passes.
 - New findings: F-36, F-37 (PD 0.10.1), F-38 (Pattern Lab's dev script, upstream fix list).
 
+Decided 2026-11-26, after the Phase 3 report:
+
+- `/htwoo-core/sitemap.xml` (Pattern Lab's) stays byte for byte; nothing references it (F-05).
+- The five new 404-page warnings (3.1) are rechecked after 0.10.1. If `pd dev` still warns about links to
+  the mounted parts, that's a new `[PD-GAP]`.
+- F-01 and F-03 are recorded as "fixed in PD 0.10.0, completed by 0.10.1 (F-37)" when they close.
+
+## Phase 4: deploy and triggers (htwoo; htwoo-theme)
+
+Started 2026-11-26 on PD 0.10.0. Scope (Stefan, 2026-11-26): the workflows and their commits, without the
+first real deploy run, which waits for PD 0.10.1 (F-36, F-37). The new commits are local in both repos and
+not pushed: pushing `pd-migration` starts the first deploy run (the push changes the workflow file, which
+is in the paths filter), and pushing `pd` starts the notify workflow.
+
+Design:
+
+- One workflow in htwoo, `.github/workflows/deploy.yml`, two jobs: `build` (bump, build, upload) and `deploy`
+  (environment `github-pages`). Concurrency group `pages` for the whole workflow, `cancel-in-progress: false`:
+  runs go one at a time in order, and a newer trigger replaces a run still waiting, so the last one wins.
+- Triggers: `push` to `main` with a paths filter; `workflow_dispatch` (manual redeploy; with `bump-theme` from
+  the theme). Paths: `website/**` (the theme submodule included), `htwoo-core/**`, `htwoo-react/**`, the root
+  `package.json` and `package-lock.json` (the libraries install from them), `.gitmodules` and the workflow
+  itself. The two library builds read nothing from outside their own folders: Pattern Lab's sources are
+  `htwoo-core/src/` (`patternlab-public.json`), Storybook's are `htwoo-react/src/` (`.storybook/main.ts`), and
+  htwoo-react's code imports nothing from `@n8d/htwoo-core` (it's named only in `package.json`, the release
+  script and the docs' text). So the open question from the brief needed no decision.
+- The theme starts the deploy with `gh workflow run deploy.yml --ref <branch>`. `repository_dispatch` would
+  only start workflows on the default branch, and the fork's `main` has none (F-39).
+- The bump: on `bump-theme`, the run checks out the branch's newest commit, runs
+  `git submodule update --remote website/theme` (the branch named in `.gitmodules`), and commits
+  `chore(deps): Bump htwoo-theme to <short sha>` (format from 2.12) only if the pin moved, then pushes. It pins
+  the theme branch's newest commit, not the SHA it was sent, so a late or out-of-order notify never pins an
+  older theme. A push with `GITHUB_TOKEN` starts no new run, so a theme change deploys once.
+- Build steps, the parts' own commands: `npm ci`, `npm run pl:publish-docs -w htwoo-core`,
+  `npm run build-storybook -w htwoo-react`, `npm ci` and `npm run build` (`pd build`) in `website/` with
+  `SITE_URL` from `actions/configure-pages`' `base_url`; then `upload-pages-artifact` of `website/site`. No copy,
+  move or file-writing step (Acceptance 8). Node 24 for all of it (the old builds pass on 24, 0.3).
+- Action versions, latest releases at the time: `checkout@v7`, `configure-pages@v6`, `setup-node@v7`,
+  `upload-pages-artifact@v5`, `deploy-pages@v5`. `upload-pages-artifact` leaves out dotfiles since v4. The
+  only one in the Phase 3 output is `/.nojekyll`, which an Actions deployment doesn't need. The Phase 3
+  output has no symlinks or hard links (`find -type l`, `-links +1`: 0), so `hugo.yml`'s link clean-up steps
+  aren't carried over.
+- Permissions: none at the top; `build` gets `contents: write` (bump) and `pages: read` (configure-pages);
+  `deploy` gets `pages: write` and `id-token: write`.
+- The theme's `.github/workflows/notify-htwoo.yml`: on a push to `main`, with its own concurrency group,
+  `gh workflow run` with `HTWOO_DISPATCH_TOKEN` against `<owner>/htwoo`, owner taken from the theme repo
+  (`n8design` upstream, `StfBauer` on the fork).
+
+### 4.1 `1f646d6b7` ci(website): Add the deploy workflow (htwoo)
+
+- `.github/workflows/deploy.yml`, upstream form (`push` to `main`).
+- Check: parsed with `yaml` (from the Phase 0 clone's `node_modules`): triggers `push`, `workflow_dispatch`;
+  jobs `build`, `deploy`; group `pages`; paths as above. commitlint 0 (`lint-msg.sh`). actionlint not run
+  (fetching it was refused in this session).
+- Check, bump step (the step's exact script, taken from the YAML), in the scratch folder against a bare
+  clone of the local fork as `origin`, and the submodule pointed at the local theme with 4.4 and 4.5 on
+  top: run 1 pins `bfe8a38`, commits `chore(deps): Bump htwoo-theme to bfe8a38` as `github-actions[bot]`
+  (only `website/theme` changed, commitlint 0) and pushes `ee6860fb0..501f24ef6`. Run 2 logs "The theme is
+  already pinned to bfe8a38" and doesn't commit. Not tested locally: a real `GITHUB_TOKEN` push and the
+  concurrency group (Acceptance 9).
+
+### 4.2 `6b95b4b7e` ci: Remove the Hugo deploy workflow (htwoo)
+
+- `.github/workflows/hugo.yml` removed.
+- The Hugo Nx targets went in Phase 2 (2.7, `3ac0476a2`: `docs:hugo:build`, `docs:hugo:serve` and their two
+  root scripts), so there is no second commit for them now.
+- Check: `grep -i hugo nx.json package.json */project.json`: none. `git ls-files | grep -i hugo`: only
+  htwoo-core's three `hugo-layouts` files, and `docs/htwoo-components/layouts/` holds three more (F-40,
+  htwoo-core is read-only). commitlint 0.
+
+### 4.3 `ee6860fb0` chore(fork): Deploy the website from pd-migration (htwoo) **FORK-ONLY**
+
+- `on.push.branches`: `main` → `pd-migration` (F-39). Dropped before the upstream PR. commitlint 0.
+
+### 4.4 `2ed2703` ci: Add the workflow that notifies htwoo of theme changes (htwoo-theme)
+
+- `.github/workflows/notify-htwoo.yml`, upstream form (from `main` to htwoo `main`). Check: parsed with
+  `yaml` (trigger `push` to `main`, job `notify`, group `notify-htwoo`); commitlint 0.
+
+### 4.5 `bfe8a38` chore(fork): Notify the htwoo fork's pd-migration from pd (htwoo-theme) **FORK-ONLY**
+
+- `on.push.branches`: `main` → `pd`; `HTWOO_REF`: `main` → `pd-migration` (F-39). commitlint 0.
+
+### 4.6 Logs (htwoo)
+
+- `docs(website): Update the migration logs for phase 4`: this section; findings F-01, F-03 (closure
+  wording), F-05 (`/htwoo-core/sitemap.xml`; the block's status now matches the table), F-25 (recheck), new
+  F-39, F-40.
+
+### 4.7 Waiting for the first deploy run
+
+In this order, once PD 0.10.1 is out:
+
+1. F-25 on GitHub: `pd-migration` in `StfBauer/htwoo`'s `github-pages` environment; `HTWOO_DISPATCH_TOKEN` in
+   `StfBauer/htwoo-theme` with Actions: read and write on `StfBauer/htwoo`. Recheck with the two `gh api`
+   calls in F-25.
+2. PD 0.10.1 in `website/` and the theme (bump commits), the full `pd build` without the stand-ins
+   (Acceptance 8, output part). Then F-01 and F-03 close as "fixed in PD 0.10.0, completed by 0.10.1
+   (F-37)", and F-36 and F-37 close.
+3. The five 404-page warnings from 3.1, rechecked in `pd dev`: a new `[PD-GAP]` if any still warns about a
+   link to a mounted part.
+4. Push `pd-migration` first: the first deploy run. Push `pd` second: its notify run needs the deploy
+   workflow on the fork. Then Acceptance 9 run by run, run URLs here:
+   - push changing `website/`: …; htwoo-core: …; htwoo-react: …
+   - push touching none of the paths (for example `docs/project.json`): no run
+   - push to `pd`: notify run …, deploy run … with one bump commit
+   - two triggers close together: …
+   - manual run: …
+5. Acceptance 10 on `https://stfbauer.github.io/htwoo/`: cache-bypassing `curl` for status codes and served
+   CSS, then the rendered DOM after a hard refresh.
+
 ## Appendix: baseline URL lists (Node 20 build at the base SHAs)
 
 Every live 200 URL is in this build (0.3). Route lists below; `/htwoo-core/`, `/htwoo-react/` and the
