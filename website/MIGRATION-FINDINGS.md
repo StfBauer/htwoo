@@ -11,9 +11,9 @@ the rehearsal setup.
 
 | ID | Tag | Repo | Title | Status |
 |---|---|---|---|---|
-| F-01 | [PD-GAP] | htwoo | Site config can't place another tool's build output at a site path | open: PD feature (Stefan), Phase 3 waits |
-| F-02 | [PD-GAP] | htwoo | Site pages can't come from markdown outside `pagesDir` (package changelogs) | open: PD feature (Stefan), after F-01 |
-| F-03 | [PD-GAP] | htwoo | Root-level static files can't be served at their paths (`/889032/`, favicons, manifest) | open: same PD feature as F-01 |
+| F-01 | [PD-GAP] | htwoo | Site config can't place another tool's build output at a site path | fix in PD 0.10.0 (`site.mounts`), verified in a test build; fixed once the full build passes (waits for 0.10.1: F-36, F-37) |
+| F-02 | [PD-GAP] | htwoo | Site pages can't come from markdown outside `pagesDir` (package changelogs) | open: PD feature (Stefan); menu links to the changelogs on GitHub meanwhile (Phase 3) |
+| F-03 | [PD-GAP] | htwoo | Root-level static files can't be served at their paths (`/889032/`, favicons, manifest) | fix in PD 0.10.0 (`site.mounts`, theme `site-root/` at `/`), verified as F-01 |
 | F-04 | [PD-GAP] | htwoo | Raw HTML in page markdown is shown as text (Hugo renders it: `unsafe: true`) | workaround: home markup in the theme (Phase 1); content in Phase 2 |
 | F-05 | [PD-GAP] | htwoo | Sitemap file names and the sitemap index are fixed (`/sitemap-pages.xml`, `/components-sitemap.xml`) | won't fix: dropped, PD's `/sitemap.xml` kept (decision 3) |
 | F-06 | [PD-GAP] | htwoo | No RSS feeds: 48 `index.xml` URLs have no equivalent | won't fix: dropped (decision 3) |
@@ -46,6 +46,9 @@ the rehearsal setup.
 | F-33 | [PD-GAP] | htwoo | An external image in markdown can't get a width and height: `pd build` stops on it | workaround: sized `badge` component in the theme |
 | F-34 | [PD-GAP] | htwoo | Content image and theme asset URLs change (`/images/…`, `/how-to/*.png`, `/js/main.js`, `/assets/css/main.*.css`) | won't fix: new URLs accepted |
 | F-35 | [SUBJECT-DEBT] | htwoo | The bump commit format `chore(deps): bump …` breaks commitlint's sentence-case subject rule | fixed: format `chore(deps): Bump …` |
+| F-36 | [PD-GAP] | htwoo | `pd build` requires `site.workbenchUrl` with `build.workbench: false`, and refuses a mount at it | open: PD 0.10.1 (Stefan); the website has none (Phase 3) |
+| F-37 | [PD-GAP] | htwoo | A mount can't publish a file under `/assets/`, even with no site file at that path | open: PD 0.10.1 (Stefan), with F-36; frozen pages not rewritten |
+| F-38 | [SUBJECT-DEBT] | htwoo | Pattern Lab's pages load the dev script `/ice-hotreloader/dist/browser.min.js` in production | open |
 
 ## Upstream fixes (hTWOo, outside this migration)
 
@@ -56,14 +59,28 @@ them, and each needs its own fix in n8design/htwoo.
 |---|---|---|
 | F-09 | `npm run build:package -w htwoo-core` fails | `copy:css` copies `public/css/htwoo.min.css`; ice-build writes `public/css/htwoo.css` |
 | F-10 | Nx loads no `project.json`: every root `nx run <project>:…` script fails | the root `.gitignore` has `**/project.json` (line 128), and Nx leaves out what git ignores |
+| F-38 | Pattern Lab's built pages load `/ice-hotreloader/dist/browser.min.js` (404) | `htwoo-core/src/_meta/_foot.hbs` line 43 writes the dev script into every page, also for `pl:publish-docs` |
 | F-12 | npm's `@n8d/htwoo-core` 2.9.x isn't in `main` (2.7.3) | released from branches not merged into `main` (2.9.2: upstream `81c88be`, PR #187) |
 
 ---
 
 ### F-01 [PD-GAP] Site config can't place another tool's build output at a site path
 
-- Status: open. Decided 2026-11-25: a PD feature (mount a folder at a route, `/` included), built by
-  Stefan in PD, covering F-03 too. Phase 3 waits for it.
+- Status: fix in PD 0.10.0 (`site.mounts`, released 2026-11-26), verified in Phase 3 with a test build
+  (below); moves to "fixed in PD 0.10.0" once the website's full `pd build` passes, which waits for 0.10.1
+  (F-36, F-37). Decided 2026-11-25: a PD feature (mount a folder at a route, `/` included), built by
+  Stefan in PD, covering F-03 too.
+- Phase 3 (htwoo `84ef52e6a`, PD 0.10.0): `site.mounts` in `website/pattern-dump.config.ts` publishes
+  `../docs/htwoo-core` at `/htwoo-core/` (Pattern Lab, built fresh with `pl:publish-docs`, as CI does),
+  `../docs/htwoo-react` at `/htwoo-react/` (`build-storybook`), the frozen component docs (`website/frozen/`,
+  one mount per folder) and the theme's `site-root/` at `/`. Test build in a clean clone with two edits that
+  stand in for 0.10.1, never committed (a placeholder `workbenchUrl`, the `/assets/css/` mount left out):
+  passes; `mounts: 2133 files (69.4 MB)`; every mounted file byte-identical to its source (`diff -rq`);
+  `/htwoo-core/` 1310 files = the baseline's 1309 + `sitemap.xml` (the old workflow deleted it), path list
+  hash as the baseline; `css/htwoo.min.css` `39735ed4…` as deployed today; `/htwoo-react/` 461 files, 300
+  stories, story list hash as the baseline. `pd dev` serves every mount, `/htwoo-core` forwards to
+  `/htwoo-core/`. Two mounts can't share a route (`"site.mounts[3].to": "/" is site.mounts[2]'s route
+  too`), so the frozen copy has one mount per folder.
 - Phase: 0
 - Repo and commit: htwoo `2297b8114` (spike outside the repo), PD 0.9.0, Node 24.22.3, macOS 27.2.1
 - Where: the site config `website/pattern-dump.config.ts` (planned); targets `/htwoo-core/`, `/htwoo-react/`,
@@ -102,6 +119,12 @@ them, and each needs its own fix in n8design/htwoo.
 
 - Status: open. Decided 2026-11-25: a PD feature after F-01 (pages from markdown outside `pages/`, title
   from the config, heading offset), built by Stefan.
+- Phase 3: `pd build` (0.10.0) stops on the menu's links to `/changelog/htwoo-core-cl/` and
+  `/changelog/htwoo-react-cl/` (70 broken links, two on each of the 35 pages). Decided 2026-11-26: until this
+  finding is fixed, the two entries link the package changelogs on GitHub
+  (`htwoo-core/CHANGELOG.md`, `REACT-CHANGELOG.md` on `main`; htwoo `84ef52e6a`). The URLs
+  `/changelog/htwoo-core-cl/`, `/changelog/htwoo-react-cl/` and `/changelog-core/` stay unserved until then;
+  the frozen component pages still link the first two (a mount is never link-checked).
 - Phase: 0
 - Repo and commit: htwoo `2297b8114`, PD 0.9.0, Node 24.22.3, macOS
 - Where: changelog pages, from `htwoo-core/CHANGELOG.md` and `REACT-CHANGELOG.md`
@@ -125,7 +148,9 @@ them, and each needs its own fix in n8design/htwoo.
 
 ### F-03 [PD-GAP] Root-level static files can't be served at their paths
 
-- Status: open
+- Status: fix in PD 0.10.0: the theme's `site-root/` mounted at `/` (65 files: the icons, the manifest,
+  `/889032/`), served by `pd dev` and written by the test build (F-01, Phase 3). Moves to "fixed in PD
+  0.10.0" with F-01.
 - Phase: 0
 - Repo and commit: htwoo docs `bc889ced5`, theme `2a8010a`, PD 0.9.0
 - Where: `/889032/*.css` and fonts, `/favicon.ico`, `/favicon-16x16.png`, `/favicon-32x32.png`,
@@ -345,7 +370,7 @@ them, and each needs its own fix in n8design/htwoo.
 
 ### F-14 [SUBJECT-DEBT] Storybook and Pattern Lab load files from other hosts
 
-- Status: open
+- Status: open (the hot reloader script: F-38)
 - Phase: 0
 - Repo and commit: htwoo `2297b8114`
 - Where: `htwoo-react/.storybook/preview-head.html`, `manager-head.html`, stories
@@ -717,6 +742,8 @@ them, and each needs its own fix in n8design/htwoo.
 ### F-34 [PD-GAP] Content image and theme asset URLs change
 
 - Status: won't fix: decided 2026-11-25, the new image URLs are accepted (the theme bundles too)
+- Phase 3: `/js/main.js` and `/images/launch-img.jpg` answer again: the frozen component pages load or name
+  them, so `website/frozen/` publishes them. `/assets/css/main.49c0….css` is the same case and waits for F-37.
 - Phase: 2
 - Repo and commit: htwoo `27ac7c18a`, PD 0.9.0
 - Reproduce: every live URL with status 200 outside `/components/`, `/htwoo-core/`, `/htwoo-react/`, the feeds
@@ -754,4 +781,67 @@ them, and each needs its own fix in n8design/htwoo.
   history mixes both.
 - Proposed fix: in the brief: `chore(deps): Bump htwoo-theme to <short sha>`; or relax `subject-case` for
   `chore(deps)`.
+- Applies upstream: yes
+
+### F-36 [PD-GAP] `pd build` requires `site.workbenchUrl` when no workbench is built
+
+- Status: open. Decided 2026-11-26: a patch for PD 0.10.1 (Stefan): `site.workbenchUrl` is optional when
+  `build.workbench` is `false`, and without it `robots.txt` gets no workbench `Disallow` line. Spec shown
+  failing on a fresh `dist/` first. The website has no `workbenchUrl` (htwoo `dec8d6628`); its full
+  `pd build` waits for 0.10.1.
+- Phase: 3
+- Repo and commit: htwoo `dec8d6628`, PD 0.10.0, Node 24.22.3, macOS 27.2.1
+- Where: `website/pattern-dump.config.ts` (`build: { workbench: false }`, no `site.workbenchUrl`)
+- Reproduce: in `website/`, `npx pd build`.
+- Expected: the site builds; it has no workbench and no page links to one.
+- Actual: `pd build: site.workbenchUrl is required to build the site: its pages link into the workbench at
+  that address`, nothing written. Setting it to `/htwoo-core/` (the address before) is refused once
+  Pattern Lab is mounted there: `"site.mounts[0].to": "/htwoo-core/" is the workbench's path`. With a
+  placeholder value (test only), its one trace in the output is `robots.txt`'s
+  `Disallow: <workbenchUrl>preview/`; no page links to it.
+- Evidence: `node_modules/pattern-dump/dist/pd.js` 0.10.0, line 9561 (the check sits outside the
+  `buildWorkbench` branch); `<baseline>/work/phase3-parts/build3.log`, `build6.log`
+- Cause: the build checks `workbenchUrl` for every site, built workbench or not.
+- Proposed fix: as decided above.
+- Applies upstream: yes
+
+### F-37 [PD-GAP] A mount can't publish a file under `/assets/`
+
+- Status: open. Decided 2026-11-26: a PD fix in 0.10.1 with F-36 (Stefan): a mounted file under
+  `/assets/` is allowed when no file the site writes has that path. The frozen pages aren't rewritten.
+- Phase: 3
+- Repo and commit: htwoo `5ed46bed9`, PD 0.10.0
+- Where: `website/frozen/assets/css/main.49c0f006c92f78b9963202d0d83b7f531d56bfe6586ee39eb695d8c52bdfb531.css`,
+  mounted at `/assets/css/`; linked by all 250 frozen `/components/` pages (resolved against their
+  `<base href="https://htwoo.io/components/…">`)
+- Reproduce: `pd build` in `website/` (with F-36 out of the way).
+- Expected: the file published at `/assets/css/main.49c0….css`; the site writes nothing at that path (its
+  own assets are `/assets/images/…`).
+- Actual: `site.mounts: ./frozen/assets/css/main.49c0….css would be published at /assets/css/main.49c0….css,
+  which is in assets/, which Pattern Dump writes: remove the file from the mount, or publish the mount at
+  another route`; nothing written. `pd dev` answers 404 for it. Without the file the component pages render
+  without the Hugo theme's styles.
+- Evidence: `<baseline>/work/phase3-parts/build3.log`; `<baseline>/scripts/frozen-refs.py` (what the frozen
+  pages load from outside `/components/`), output `<baseline>/phase3-frozen-refs.txt`
+- Cause: the collision rule reserves all of `/assets/`, `/_pd/` and `/preview/`, not the files written there.
+- Proposed fix: as decided above.
+- Applies upstream: yes
+
+### F-38 [SUBJECT-DEBT] Pattern Lab's pages load a dev script in production
+
+- Status: open
+- Phase: 3
+- Repo and commit: htwoo `2297b8114` (unchanged on `pd-migration`)
+- Where: `htwoo-core/src/_meta/_foot.hbs` line 43, `<script src="/ice-hotreloader/dist/browser.min.js">`;
+  `patternlab-config.json` copies `../node_modules/@n8d/ice-hotreloader/` to `/ice-hotreloader`
+- Reproduce: `npm run pl:publish-docs -w htwoo-core`, then `grep -rl ice-hotreloader docs/htwoo-core --include=*.html | wc -l`.
+- Expected: a published style guide loads no dev tooling.
+- Actual: 381 pages under `/htwoo-core/` load `/ice-hotreloader/dist/browser.min.js` from the host's root:
+  a 404 on htwoo.io today and after the migration. The copy inside the build,
+  `/htwoo-core/ice-hotreloader/dist/browser.min.js`, is an empty file (0 bytes). The mount publishes both as
+  Pattern Lab writes them.
+- Evidence: `<baseline>/work/phase3-parts/repo/docs/htwoo-core/` after `pl:publish-docs`; F-14 (the same 404
+  in the Phase 0 screenshots)
+- Proposed fix: in hTWOo: write the script tag only for the dev server (`pl:serve`), not for
+  `pl:publish-docs`. Not touched in this step (htwoo-core is read-only).
 - Applies upstream: yes

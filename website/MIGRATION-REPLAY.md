@@ -12,7 +12,7 @@ Baseline artifacts: `/Volumes/Code/n8design/fork/htwoo-migration-baseline/` (bel
 | docs base SHA (`origin/docs`) | `bc889ced5f107e23d2df54cb624f7c48edba477d` |
 | theme base SHA (`origin/main` of htwoo-theme) | `2a8010a454cf18d19b549d93d7e4699a4c3aae1e` (as expected) |
 | Recorded | 2026-11-25 11:09 UTC, after `git fetch origin --prune` in both forks |
-| Pattern Dump | `0.9.0` (npm `latest` at start; tag `v0.9.0` = `3e025298a`) |
+| Pattern Dump | `0.9.0` (npm `latest` at start; tag `v0.9.0` = `3e025298a`); `0.10.0` from Phase 3 (tag `v0.10.0` = `78ed7af`) |
 | Baseline toolchain | Node 20.20.2, npm 10.8.2 (what `setup-node@v4` `'20'` resolves to); Hugo 0.108.0 extended; dart-sass-embedded 1.62.1 |
 | New work toolchain | Node 24.22.3, npm 11.19.1 |
 | OS | macOS 27.2.1 (26B131), arm64 |
@@ -534,6 +534,97 @@ the upstream PR (decided 2026-11-25, after 2.12).
   35 pages 200 for both; site warnings 176 → 181. The 5 new ones are the built-in 404 page's menu links,
   which 0.10.0 checks too: `/htwoo-core/`, `/htwoo-react/`, the icons page under `/htwoo-core/` (the mounts
   below) and the two changelog pages (F-02). The rest of the `pd dev` log is unchanged.
+
+### 3.2 `63e7e04` chore(deps): Pin pattern-dump to 0.10.0 (htwoo-theme)
+
+- Theme `package.json` devDependency `pattern-dump` `0.9.0` → `0.10.0` (exact).
+- Check: `<baseline>/scripts/verify-theme.sh 2b7fd50 63e7e04`: `npm ci` 0, build 0 (16 components → 126
+  files), typecheck 0; audit with an empty cache (the first run reused all 18 results from 0.9.0):
+  re-audited 18, 0 defects. The theme's head partial writes no feed link, so 0.10.0's new rule needs no change.
+
+### 3.3 `b6767a98a` chore(deps): Bump htwoo-theme to 63e7e04 (htwoo)
+
+- Submodule `website/theme` `2b7fd50` → `63e7e04`; the lockfile drops its second copy of PD (0.9.0 under
+  `theme/node_modules/`, 3.1).
+
+### 3.4 `d27ec009b` feat(website): Add the frozen component docs (htwoo)
+
+- `website/frozen/`, 298 files plus `README.md`, from the Phase 0 build (Node 20, `<baseline>/work/node20/docs-site/public/`):
+  `components/` (292 files: 250 pages, 42 feeds; path list hash `06c38315…` as the appendix), and what those
+  pages load or name outside `/components/` (`<baseline>/scripts/frozen-refs.py`, output
+  `<baseline>/phase3-frozen-refs.txt`): `htwoo-components/js/` (3), the Hugo theme's
+  `assets/css/main.49c0….css` and `js/main.js`, `images/launch-img.jpg` (their `og:image`). The pages use
+  `<base href="https://htwoo.io/…">`; nothing in them is fork-specific (`grep` for the fork's names and
+  local paths: none).
+
+### 3.5 `dec8d6628` refactor(website): Remove the workbench address (htwoo)
+
+- `site.workbenchUrl` removed: `/htwoo-core/` is Pattern Lab, and 0.10.0 refuses a mount at the workbench's
+  address. `pd build` then refuses to build at all (F-36).
+
+### 3.6 `5ed46bed9` feat(website): Publish the style guides, the frozen docs and the root files with mounts (htwoo)
+
+- `site.mounts`: `../docs/htwoo-core` → `/htwoo-core/`, `../docs/htwoo-react` → `/htwoo-react/`, each folder of
+  `./frozen` at its own route (`/components/` with `sitemap: true`, as the Hugo sitemap listed its 250
+  pages; `/htwoo-components/`, `/assets/css/`, `/js/`, `/images/`), `./theme/site-root` → `/`. `from` is
+  relative to the project root, `website/`.
+- One `./frozen` mount at `/` was refused (`"site.mounts[3].to": "/" is site.mounts[2]'s route too`).
+
+### 3.7 `84ef52e6a` feat(website): Link the menu's changelogs to the package changelogs on GitHub (htwoo)
+
+- Decided 2026-11-26 (F-02): the two Changelogs entries link `htwoo-core/CHANGELOG.md` and
+  `REACT-CHANGELOG.md` on GitHub `main` until the site builds those pages.
+
+Check for 3.3 to 3.7 (`<baseline>/scripts/verify-website.sh`, clean clone, `pd dev`, every route of
+`/api/pages`): `npm ci` 0 and 35 of 35 pages 200 at each commit. Site warnings 181 → 109 at 3.6 (the mounts)
+→ 37 at 3.7. All 37 are links to `/htwoo-core/` (and `/htwoo-core` without its slash in
+`release-history.md`, F-16): a plain clone has the committed `docs/htwoo-core`, stale, with no
+`index.html`. With Pattern Lab built fresh, `pd dev` logs no site warnings.
+
+### 3.8 Acceptance checks of Phase 3
+
+Decided 2026-11-26: F-36 and F-37 are fixed in PD 0.10.1 (Stefan); the frozen pages aren't rewritten; the
+final full `pd build` runs once 0.10.1 is out. Until then the build is proven in a clean clone
+(`<baseline>/work/phase3-parts/`) with two edits that stand in for 0.10.1, never committed: a placeholder
+`site.workbenchUrl` and the `/assets/css/` mount left out.
+
+- Parts, as CI builds them (`<baseline>/scripts/phase3-parts.sh 84ef52e6a`, Node 20.20.2): `npm ci` 0,
+  `pl:publish-docs` 0 (335 patterns built, as the baseline), `build-storybook` 0. Before the build the
+  committed `docs/htwoo-core` has 550 files and no `index.html`; after it, 1310 files with `index.html`.
+  Pattern Lab writes over the committed files, so a workflow that builds before `pd build` publishes what
+  `hugo.yml` published.
+- `pd build` (Node 24.22.3, PD 0.10.0, `HTWOO_ANALYTICS=1`, the two stand-ins): exit 0, 2204 files;
+  `mounts: 2133 files (69.4 MB)`, `accessibility: 35 pages, no errors`, `/sitemap.xml` 277 URLs (27 pages
+  + 250 component pages), `robots.txt` naming `/sitemap.xml`, `llms.txt`, `404.html`. Log:
+  `<baseline>/work/phase3-parts/build6.log`.
+- **1 (all)** (`<baseline>/scripts/acceptance1.py`, log `<baseline>/logs/phase3-acceptance1.log`):
+  - built baseline, 2262 paths: 1707 served at their paths and the 461 of `/htwoo-react/` by count (461) and
+    story list (300 stories, hash `0065e8ed…`, as the baseline). 94 not served, each with a finding or
+    decision: F-02 changelog pages 3, F-05 sitemap names 2, F-06 feeds 6, F-34 content and Hugo theme images
+    and the source map 24, F-37 the frozen stylesheet 1, `/884619/` 58 (dropped in the Phase 0 ownership
+    table, referenced by nothing).
+  - live baseline, 389 URLs with status 200: 370 served (the 18 `/htwoo-react/` URLs checked
+    by path too); 19 not served: F-02 3, F-05 2, F-06 6, F-34 7, F-37 1.
+  - `/components/`, `/htwoo-core/`, `/htwoo-react/`, `robots.txt` and `/sitemap.xml` served;
+    `/sitemap-pages.xml` and `/components-sitemap.xml` not (F-05, dropped).
+  - New in the output: `/.nojekyll`, `/404.html`, `/llms.txt`, `/htwoo-core/sitemap.xml` (Pattern Lab's,
+    one URL; `hugo.yml` deleted it, a mount publishes it as written).
+  - Every mount byte-identical to its folder (`diff -rq` of `/htwoo-core/`, `/htwoo-react/`, `/components/`,
+    `/889032/`). `/htwoo-core/css/htwoo.min.css` `39735ed4…`, as deployed today (F-13).
+  - `pd dev` in the clone: `/htwoo-core/`, `/htwoo-react/`, `/components/`, `/htwoo-components/…`, `/js/main.js`,
+    `/images/launch-img.jpg`, the icons, the manifest and `/889032/…css` 200; `/htwoo-core` 302 to
+    `/htwoo-core/`; `/assets/css/main.49c0….css` 404 (F-37).
+- **5** (`<baseline>/scripts/phase3-packages.sh 20 phase3-pkg-node20 5ed46bed9`, with `website/` present,
+  log `<baseline>/logs/phase3-packages-node20.log`): the same as the Phase 2 independence run line by line.
+  Pattern Lab 335 built and 31 omitted; compiled CSS `77f9411424e644d12315fb21d3b0a8386f0bc76df5fd201119889f61a36ad517`;
+  `npm pack --dry-run` file lists identical (htwoo-core 5 files, list hash `a572d2e7…`; htwoo-react 3 files,
+  shasum `642ddf3e…`); `build:package` exit 1 (F-09); the same failing tests (F-11); Storybook 461 files.
+  The builds write to `docs/` and `packages/htwoo-core/` only.
+- **8 (output part):** the site config declares every part, and `pd build` writes `/`, `/components/`,
+  `/htwoo-core/`, `/htwoo-react/`, the sitemap and `robots.txt` with no copy step, with the two stand-ins.
+  The real run waits for 0.10.1.
+- F-01 and F-03 move to "fixed in PD 0.10.0" when that run passes.
+- New findings: F-36, F-37 (PD 0.10.1), F-38 (Pattern Lab's dev script, upstream fix list).
 
 ## Appendix: baseline URL lists (Node 20 build at the base SHAs)
 
