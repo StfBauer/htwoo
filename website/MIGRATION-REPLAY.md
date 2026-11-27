@@ -1128,6 +1128,19 @@ over (step 8).
 - `docs(website): Record the launch round`: this phase, findings F-44 to F-51 and the updates to F-05, F-06,
   F-15, F-23, F-34.
 
+### 6.17 After the round (Stefan, 2026-11-27)
+
+- `4c08c6ebf` docs(website): Keep the placeholder guidelines pages out of search: all twelve guidelines pages
+  (`01-index` to `12-browser-support`) still hold the Pattern Lab starter's template text; each is `index: false`
+  (`noindex`, out of the sitemap and `llms.txt`), still published. The listing `/guidelines/` stays indexed.
+  `phase6-seo.cjs`: indexable 265 = sitemap 265. Not asked in the round itself; done now (F-50).
+- `255cffd7a` docs(website): Load the latest 2.x release in the CDN examples: `@2` instead of `@2.9.2`; both URLs
+  302 to `@2.9.2`, then `text/css` and `text/javascript` (F-46).
+- Brief, Part 1, 5.1: a temporary branch ruleset `freeze-docs` on n8design/htwoo, created before the merge,
+  blocks pushes to `docs`; 5.5 and step 8: lifted first when `docs` is retired after the two weeks (removing
+  `hugo.yml` from `docs` is itself a push).
+- Log commit: `docs(website): Record the guidelines and CDN changes`.
+
 The round ends here. No `pd-upstream` branch was cut and no PR opened.
 
 ## Appendix: baseline URL lists (Node 20 build at the base SHAs)

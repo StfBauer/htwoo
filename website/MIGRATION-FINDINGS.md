@@ -89,11 +89,11 @@ Status at the end of the rehearsal (Phase 5, 2026-11-27): htwoo `pd-migration` a
 | F-43 | [SUBJECT-DEBT] | htwoo | Pattern Lab's theme switch fetches its theme file from outside `/htwoo-core/`: 404 | open |
 | F-44 | [SUBJECT-DEBT] | theme | The menu is its own scroll area and every entry is sticky | fixed in theme `13bc786`, verified |
 | F-45 | [SUBJECT-DEBT] | theme | Code colours fail 4.5:1 (comment 3.03:1, pink 3.93:1) | fixed in theme `a013637`, verified |
-| F-46 | [SUBJECT-DEBT] | htwoo | The CDN instructions link unpkg's file viewer, and a script tag ends in a folder | fixed (`2dc7e4407`) |
+| F-46 | [SUBJECT-DEBT] | htwoo | The CDN instructions link unpkg's file viewer, and a script tag ends in a folder | fixed (`2dc7e4407`; `@2` since `255cffd7a`) |
 | F-47 | [FORK-ONLY] | htwoo | The fork's deploy competes with htwoo.io in search | fixed: `site.index` only for `https://htwoo.io/` (`dd42a4dc6`) |
 | F-48 | [PD-GAP] | htwoo | `redirectFrom` can't forward to an external URL | workaround: old changelog URLs to `/changelog/` (`28c7e15a3`) |
 | F-49 | [PD-GAP] | htwoo | `redirectFrom` takes only routes ending in `/` | workaround: redirect pages in a mount (`2dbc7af76`) |
-| F-50 | [SUBJECT-DEBT] | htwoo | Pages without a description, and repeated titles and descriptions | fixed for the website's pages (`a5942cded`); frozen pages as built |
+| F-50 | [SUBJECT-DEBT] | htwoo | Pages without a description, and repeated titles and descriptions | fixed for the website's pages (`a5942cded`); 12 template guidelines pages `noindex` (`4c08c6ebf`); frozen pages as built |
 | F-51 | [SUBJECT-DEBT] | htwoo | Old style guide deep links land on the tools' "not found" (`?p=atoms-grid-grid`, Storybook `--page`) | open |
 
 ## Upstream fixes (hTWOo, outside this migration)
@@ -1070,9 +1070,9 @@ them, and each needs its own fix in n8design/htwoo.
 
 ### F-46 [SUBJECT-DEBT] The CDN instructions link unpkg's file viewer, and a script tag ends in a folder
 
-- Status: fixed in htwoo `2dc7e4407` (Phase 6)
+- Status: fixed in htwoo `2dc7e4407`, `@2` since `255cffd7a` (Phase 6)
 - Phase: 6
-- Repo and commit: htwoo `4beb7f431` (content from `docs` `bc889ced5`); fixed in `2dc7e4407`
+- Repo and commit: htwoo `4beb7f431` (content from `docs` `bc889ced5`); fixed in `2dc7e4407`, `255cffd7a`
 - Where: `website/pages/getting-started.md`, "CDN Support"
 - Reproduce: `curl -sL -o /dev/null -w '%{content_type}' https://unpkg.com/browse/@n8d/htwoo-core@2.9.2/dist/css/htwoo.min.css`
   → `text/html` (unpkg's viewer page); `…/dist/js/` → `text/html` (a folder listing).
@@ -1081,6 +1081,10 @@ them, and each needs its own fix in n8design/htwoo.
   200 `text/javascript; charset=utf-8`, 15590 B (`<baseline>/scripts/phase6-cdn.sh` on the served page). The viewer
   link stays as a link for browsing the package, at 2.9.2 instead of 0.4.0-beta2. 2.9.2 is npm's `latest`, from a
   commit `main` doesn't contain (F-12).
+- Changed 2026-11-27 (Stefan), htwoo `255cffd7a`: the examples load `@2` instead of `@2.9.2`, so they follow the
+  latest 2.x release; the text says how to pin an exact version. Checked from the built page: both URLs answer
+  302 to `@2.9.2`, then 200 `text/css; charset=utf-8` (120207 B) and 200 `text/javascript; charset=utf-8` (15590 B).
+  The viewer link stays at 2.9.2.
 - Applies upstream: yes
 
 ### F-47 [FORK-ONLY] The fork's deploy competes with htwoo.io in search
@@ -1165,6 +1169,13 @@ them, and each needs its own fix in n8design/htwoo.
   description or social image, `noindex`); `noindex` on about, flavor, roadmap, why-htwoo (F-31, Stefan decides)
   and the three supporter pages; the frozen pages' 7 repeated titles and descriptions (no new work goes into them;
   the htwoo-core step replaces them); Pattern Lab's and Storybook's own heads (htwoo-core, htwoo-react).
+- Added 2026-11-27 (Stefan), htwoo `4c08c6ebf`: the twelve guidelines pages are `noindex` (`index: false`), because
+  each body is still the Pattern Lab starter's template text: `01-index` (overview), `02-principles`, `03-code`,
+  `04-accessibility`, `05-data-display`, `06-data-entry`, `07-data-validation`, `08-input-modes`, `09-navigation`,
+  `10-notifications`, `11-writing`, `12-browser-support` ("Guidelines go here", "For inspiration, check out …").
+  They stay published at their URLs (6 of them have impressions); out of the sitemap and `llms.txt`. The listing
+  `/guidelines/` stays indexed. Sitemap now 265 = the indexable pages (15 PD + 250 frozen), nothing missing or
+  extra.
 - Applies upstream: yes
 
 ### F-51 [SUBJECT-DEBT] Old style guide deep links land on the tools' "not found"
