@@ -934,6 +934,202 @@ Recorded in the brief (outside both repos), Part 1 step 4 and Decisions:
 The rehearsal ends here. Part 1 (cutting `pd-upstream`, the PRs) is Stefan's to start; no branch was cut and no PR
 opened. Log commit: `docs(website): Record the merge decisions for the upstream PRs`.
 
+## Phase 6: launch round (htwoo; htwoo-theme)
+
+Started 2026-11-27 (Stefan): one more round on the fork before the upstream PRs. New commits only on `pd-migration`
+and `pd`, none rewritten, one concern each; every item a finding; no `pd-upstream`, no PR, no setting changed on
+n8design/htwoo (read with `gh api` only). Scripts in `<baseline>/scripts/phase6-*`, outputs in `<baseline>/phase6/`
+and `<baseline>/logs/phase6-*`.
+
+### 6.1 `13bc786` fix: Let the main menu scroll with the page (htwoo-theme)
+
+F-44. Header column as long as the page, no sticky entry, no scroll area, menu column in rem; narrow screens: the
+bar stays at the top while closed, the open menu scrolls with the page. `phase6-menu.cjs` (390 and 1280 px, text
+100 and 200 %, light and dark): before 8 of 8 fail, after 8 of 8 pass, locally and on the deployed fork.
+
+### 6.2 `a013637` fix: Lighten the code colours that fail 4.5:1 (htwoo-theme)
+
+F-45. `#75715e` → `#938e78` (3.03 → 4.52:1), `#f92672` → `#fa4989` (3.93 → 4.51:1, keyword, tag, property); the
+other ten tokens pass and stay. `phase6-code-contrast.cjs` on the deployed fork: every token class ≥ 4.51:1.
+Theme check (`verify-theme.sh ab89060 a013637`, `<baseline>/logs/phase6-verify-theme.log`): both commits build;
+typecheck 0, audit 0 defects.
+
+### 6.3 `2dc7e4407` fix(website): Link the CDN files directly instead of unpkg's viewer (htwoo)
+
+F-46. `…@2.9.2/dist/css/htwoo.min.css` → 200 `text/css`, `…@2.9.2/dist/js/umd/htwoo.min.js` → 200
+`text/javascript` (`phase6-cdn.sh` on the served page).
+
+### 6.4 `7f0340862` fix(website): Remove the Google Analytics tag (htwoo)
+
+F-15. htwoo.io loads the same `G-40524BBS9G`, and it is 404 there too (`phase6-thirdparty.sh`). Removed from the
+website's head; Ahrefs stays.
+
+### 6.5 typography.com (no commit)
+
+F-23. htwoo.io loads `fonts.css`; for htwoo.io it redirects to `/889032/….css`, for the fork it is 403 (licence
+bound to the domain). Expected; nothing changed; in the launch smoke test (brief, Part 1 section 5.4).
+
+### 6.6 `dd42a4dc6` feat(website): Index only the build for htwoo.io (htwoo)
+
+F-47. `site.index` is on only when `SITE_URL` is exactly `https://htwoo.io/`. `SITE_URL` comes from
+`configure-pages`' `base_url`: `https://htwoo.io` upstream (custom domain, HTTPS enforced), the github.io address on
+a fork. Fork: every PD page `noindex`, no sitemap, no `llms.txt`. htwoo.io build: unchanged, canonicals, sitemap and
+robots.txt on `https://htwoo.io`. Nothing fork-specific in the code, so nothing to leave out of the PR.
+
+### 6.7 `2dbc7af76` feat(website): Redirect the old .html how-to URLs (htwoo)
+
+F-49. `redirectFrom` refuses `/how-to/how-to-spfx-react.html` (routes must end in `/`); `website/legacy/` holds two
+redirect pages, mounted at `/how-to/` (`PD-WORKAROUND: F-49`).
+
+### 6.8 `f2cc366e6` docs(website): Link the package changelogs from the changelog page (htwoo)
+
+`/changelog/` was an empty listing; it now links both change logs on GitHub, so the redirects of 6.9 land on them.
+
+### 6.9 `28c7e15a3` feat(website): Redirect the old changelog pages to the changelog page (htwoo)
+
+F-48. `/changelog/htwoo-react-cl/` (271 impressions), `/changelog/htwoo-core-cl/` (122), `/changelog-core/` (1):
+`redirectFrom` can't name an external URL, so all three go to `/changelog/`, as decided for that case.
+
+### 6.10 `a5942cded` docs(website): Give every page a description and a title of its own (htwoo)
+
+F-50. Before (`phase6-seo.cjs`, build for htwoo.io): every PD page has a self canonical on htwoo.io and a social
+image; sitemap = the 277 indexable pages; 14 PD pages without a description (the 404 page aside), one repeated
+title, one repeated description (13 described here, the changelog page in 6.8). After: none on the PD pages. Left as they are: the frozen pages' 7 repeated titles and 7 descriptions,
+`noindex` pages (F-31 and the supporter pages), the 404 page.
+
+| Check (build for htwoo.io) | Before `4beb7f431` | After `635e69830` |
+|---|---|---|
+| PD pages: title / description / self canonical on htwoo.io / social image | 35 / 20 / 34 of 34 / 34 of 34 | 35 / 34 (404 page aside) / 34 of 34 / 34 of 34 |
+| Repeated titles / descriptions among indexable PD pages | 1 / 1 | 0 / 0 |
+| Sitemap vs indexable pages (27 PD + 250 frozen) | 277 = 277 | 277 = 277 |
+| robots.txt | `Disallow: /preview/`, `Sitemap: https://htwoo.io/sitemap.xml` | same |
+| `/components-sitemap.xml`, `/sitemap-pages.xml` in the output | no (404) | no (404) |
+| Redirect pages (`noindex`, outside the sitemap) | 0 | 5 |
+
+### 6.11 `635e69830` chore(deps): Bump htwoo-theme to a013637 (htwoo)
+
+Theme `13bc786` and `a013637` go live. Before the push: every new commit builds on its own with its pin
+(`phase6-each-commit.sh 4beb7f431..635e69830`, `<baseline>/logs/phase6-each-commit.log`: 8 of 8 `pd build` 0, 35
+pages, no accessibility errors), and a full clean build of the tip (`phase4-full-build.sh 635e69830 phase6-after
+https://htwoo.io/`): all steps 0, 2210 files. Pushed theme `pd` first, then `pd-migration`; deploy run
+45990532043 (push, `635e69830`) green.
+
+### 6.12 URL parity (items 7 to 9)
+
+`phase6-gsc-urls.py` against the deployed fork, status without following redirects, redirects followed once and
+their target checked, `?p=` and `?path=` checked against Pattern Lab's pattern list and Storybook's story index.
+
+- Search Console (htwoo.io, Pages, 12 months, 209 URLs, `<baseline>/phase6/gsc-pages-12m.tsv`): before 206 ok and
+  the three changelog URLs 404; after 208 ok. The one left: `/htwoo-core/?p=atoms-grid-grid` (19 impressions), 200
+  but Pattern Lab shows its "404", as on htwoo.io today (F-51). Full table: appendix "Phase 6 URL tables".
+- Legacy paths from `lab.n8d.studio/htwoo/` backlinks (9): `/htwoo-core/`, `/htwoo-core` (301 to `/htwoo-core/`),
+  `?p=organism-msgbars`, `?p=all`, the changelog and both `.html` redirects ok; the two Storybook `…--page` story
+  URLs show "Couldn't find story", as on htwoo.io today (the stories are `…--docs` now, F-51).
+- Acceptance 10's 19 URLs not served (4.16), each:
+
+  | URL | Reason | Now |
+  |---|---|---|
+  | `/changelog/htwoo-react-cl/`, `/changelog/htwoo-core-cl/`, `/changelog-core/` | F-02: changelogs on GitHub | redirect to `/changelog/` (F-48) |
+  | `/robots.txt` | F-24: not written under a base path | page at the root: served on htwoo.io (`Sitemap: https://htwoo.io/sitemap.xml` only) |
+  | `/components-sitemap.xml`, `/sitemap-pages.xml` | F-05: one `/sitemap.xml` | dropped: must be 404 (item 9); removed in Search Console after the launch |
+  | `/index.xml`, `/case-studies/index.xml`, `/changelog/index.xml`, `/guidelines/index.xml`, `/how-to/index.xml`, `/supporters/index.xml` | F-06: no feeds | dropped (decision 3): no impressions, nothing links them, a redirect page can't stand in for XML; PD 0.10 has feeds if wanted |
+  | `/how-to/how-to-spfx-html-button.png`, `…-button-primary.png`, `…-dark-themed-button.png`, `…-theming-1.png`, `/how-to/how-to-spfx-angular-elements-theme.png`, `/images/header-img.jpg`, `/images/front_end_frameworks_experience_ranking.png` | F-34: content images at new URLs | dropped (decision): no impressions in web search, the pages link the new URLs, an image can't be redirected |
+
+### 6.13 Lighthouse (item 11)
+
+Lighthouse 12.8.2, headless Chrome, 3 runs per page and form factor, median (`phase6-lighthouse.sh`).
+
+Deployed fork, before (`4beb7f431`) and after (`635e69830`):
+
+Before:
+
+| Page | Form | Perf | A11y | Best pr. | SEO | LCP s | CLS | TBT ms |
+|---|---|---|---|---|---|---|---|---|
+| / | desktop | 100 | 100 | 96 | 100 | 0.4 | 0.000 | 0 |
+| /components/atoms/buttons/button-primary/ | desktop | 100 | 85 | 96 | 100 | 0.6 | 0.000 | 0 |
+| /getting-started/ | desktop | 100 | 96 | 96 | 100 | 0.4 | 0.000 | 0 |
+| /how-to/how-to-spfx-html/ | desktop | 100 | 96 | 96 | 100 | 0.4 | 0.000 | 0 |
+| / | mobile | 100 | 100 | 96 | 100 | 1.5 | 0.000 | 0 |
+| /components/atoms/buttons/button-primary/ | mobile | 98 | 85 | 96 | 100 | 2.1 | 0.000 | 0 |
+| /getting-started/ | mobile | 100 | 96 | 96 | 100 | 1.5 | 0.000 | 0 |
+| /how-to/how-to-spfx-html/ | mobile | 100 | 96 | 96 | 100 | 1.5 | 0.000 | 0 |
+
+After:
+
+| Page | Form | Perf | A11y | Best pr. | SEO | LCP s | CLS | TBT ms |
+|---|---|---|---|---|---|---|---|---|
+| / | desktop | 100 | 100 | 96 | 66 | 0.5 | 0.000 | 0 |
+| /components/atoms/buttons/button-primary/ | desktop | 100 | 85 | 96 | 100 | 0.5 | 0.000 | 0 |
+| /getting-started/ | desktop | 100 | 100 | 96 | 63 | 0.4 | 0.001 | 0 |
+| /how-to/how-to-spfx-html/ | desktop | 100 | 100 | 96 | 66 | 0.4 | 0.002 | 0 |
+| / | mobile | 99 | 100 | 96 | 66 | 1.6 | 0.000 | 0 |
+| /components/atoms/buttons/button-primary/ | mobile | 98 | 85 | 96 | 100 | 2.1 | 0.000 | 0 |
+| /getting-started/ | mobile | 99 | 100 | 96 | 63 | 1.5 | 0.005 | 0 |
+| /how-to/how-to-spfx-html/ | mobile | 100 | 100 | 96 | 66 | 1.5 | 0.007 | 0 |
+
+The fork's SEO score drops on purpose: every PD page is `noindex` now (F-47; "Page is blocked from indexing"). The
+component page is a frozen Hugo page with htwoo.io's canonical, so its score stays. Best practices 96: the
+typography.com 403 in the console (F-23), fork-only. Accessibility 96 → 100: code contrast (F-45).
+
+The build for htwoo.io, served locally (typography.com blocked, F-23; performance on localhost isn't comparable
+with GitHub Pages), before and after:
+
+Before:
+
+| Page | Form | Perf | A11y | Best pr. | SEO | LCP s | CLS | TBT ms |
+|---|---|---|---|---|---|---|---|---|
+| / | desktop | 100 | 100 | 100 | 100 | 0.4 | 0.000 | 0 |
+| /components/atoms/buttons/button-primary/ | desktop | 100 | 85 | 96 | 100 | 0.5 | 0.000 | 0 |
+| /getting-started/ | desktop | 100 | 96 | 100 | 100 | 0.4 | 0.001 | 0 |
+| /how-to/how-to-spfx-html/ | desktop | 100 | 96 | 100 | 100 | 0.4 | 0.002 | 0 |
+| / | mobile | 98 | 100 | 100 | 100 | 1.9 | 0.000 | 0 |
+| /components/atoms/buttons/button-primary/ | mobile | 99 | 85 | 96 | 100 | 1.9 | 0.000 | 0 |
+| /getting-started/ | mobile | 98 | 96 | 100 | 100 | 2.0 | 0.000 | 6 |
+| /how-to/how-to-spfx-html/ | mobile | 99 | 96 | 100 | 100 | 2.0 | 0.007 | 0 |
+
+After:
+
+| Page | Form | Perf | A11y | Best pr. | SEO | LCP s | CLS | TBT ms |
+|---|---|---|---|---|---|---|---|---|
+| / | desktop | 100 | 100 | 100 | 100 | 0.4 | 0.000 | 0 |
+| /components/atoms/buttons/button-primary/ | desktop | 100 | 85 | 96 | 100 | 0.5 | 0.000 | 0 |
+| /getting-started/ | desktop | 100 | 100 | 100 | 100 | 0.4 | 0.001 | 0 |
+| /how-to/how-to-spfx-html/ | desktop | 100 | 100 | 100 | 100 | 0.4 | 0.002 | 0 |
+| / | mobile | 98 | 100 | 100 | 100 | 2.0 | 0.000 | 0 |
+| /components/atoms/buttons/button-primary/ | mobile | 98 | 85 | 96 | 100 | 2.0 | 0.000 | 0 |
+| /getting-started/ | mobile | 99 | 100 | 100 | 100 | 2.0 | 0.005 | 0 |
+| /how-to/how-to-spfx-html/ | mobile | 99 | 100 | 100 | 100 | 2.0 | 0.007 | 0 |
+
+The frozen component page's 85 accessibility (colour contrast, heading order, link names, target size) and 96 best
+practices are the Hugo page as built; no new work goes into it (the htwoo-core step replaces it).
+
+### 6.14 Rollback rehearsal on the fork (item 14)
+
+Upstream's Pages source is already GitHub Actions (`build_type: workflow`, read 2026-11-27); the Hugo site is
+deployed by `hugo.yml`. So the rollback is a deploy, not a settings switch, and the fork's settings stayed as
+they are too (source Actions, environment `main` and `pd-migration`).
+
+| Step | Run | Result |
+|---|---|---|
+| Back to Hugo: `gh workflow run hugo.yml --ref main` | 45991564671 (`2297b8114`) | green, 11:34:19 → 11:36:39 UTC; fork serves Hugo (`generator` Hugo 0.108.0) |
+| Back to Pattern Dump: `gh workflow run deploy.yml --ref pd-migration` | 45992826992 (`workflow_dispatch`, `635e69830`) | green, 11:43:42 → 11:45:14 UTC; fork serves PD (`pd-base-path`) about a minute later |
+| Tried: re-run only the deploy job of the Hugo run | 45991564671 attempt 2 | failed, nothing deployed: "Multiple artifacts named "github-pages"" (`hugo.yml` uploads its artifact in the deploy job); not a rollback path |
+
+Brief, Part 1 section 5.3 written from this.
+
+### 6.15 Launch preparation (brief, Part 1 section 5; no commit)
+
+Settings checklist (5.1, from upstream's settings as read), launch order (5.2), rollback (5.3), smoke test (5.4),
+Stefan's steps after the launch (5.5). The `docs` branch stays as the rollback until the two weeks of watching are
+over (step 8).
+
+### 6.16 Logs (htwoo)
+
+- `docs(website): Record the launch round`: this phase, findings F-44 to F-51 and the updates to F-05, F-06,
+  F-15, F-23, F-34.
+
+The round ends here. No `pd-upstream` branch was cut and no PR opened.
+
 ## Appendix: baseline URL lists (Node 20 build at the base SHAs)
 
 Every live 200 URL is in this build (0.3). Route lists below; `/htwoo-core/`, `/htwoo-react/` and the
@@ -1346,3 +1542,236 @@ Storybook build (chunk names), so it is checked by count and story list, not has
 | `/884619/` | 58 | `e82214f7f34bad96ab69f116d3038eea1929ba0a685a9f5835877567d1e1525f` |
 | `/889032/` | 58 | `419073aa7f2fbf719a0bf6a6dcdfe6f1cbaffd66c060b9ab932ba49883a71fc0` |
 | `/htwoo-components/` | 3 | `44959de0b6b5ad4df09cabcc369e4830f1ee9c7f41e082f10c6ad7d0a02fde2f` |
+
+## Appendix: Phase 6 URL tables
+
+Result: `200` the page; `redirect to …` PD's redirect page or a legacy redirect page, its target 200; `301 to …`
+GitHub Pages' redirect; `pattern …`/`story …` checked in the style guide's own index.
+
+### Search Console, page URLs with impressions (12 months, 209), on the fork after run 45990532043
+
+| URL (on htwoo.io) | Clicks | Impr. | Fork status | Result |
+|---|---|---|---|---|
+| `/` | 54 | 1643 | 200 | 200 |
+| `/how-to/how-to-spfx-html/` | 8 | 205 | 200 | 200 |
+| `/components/atoms/input/input-text-suffixed/` | 4 | 90 | 200 | 200 |
+| `/concepts/` | 3 | 330 | 200 | 200 |
+| `/changelog/htwoo-react-cl/` | 2 | 271 | 200 | redirect to /changelog/ |
+| `/getting-started/` | 2 | 104 | 200 | 200 |
+| `/htwoo-core/` | 2 | 99 | 200 | 200 |
+| `/htwoo-react/` | 2 | 78 | 200 | 200 |
+| `/components/atoms/loading/shimmer-row/` | 2 | 7 | 200 | 200 |
+| `/components/molecules/forms/radio-button-group-horizontal/` | 1 | 339 | 200 | 200 |
+| `/changelog/htwoo-core-cl/` | 1 | 122 | 200 | redirect to /changelog/ |
+| `/how-to/` | 1 | 107 | 200 | 200 |
+| `/components/atoms/loading/shimmer-img/` | 1 | 58 | 200 | 200 |
+| `/components/templates/teams/teams-splash-screen/` | 1 | 39 | 200 | 200 |
+| `/components/atoms/icons/ql-icon-svg/` | 1 | 25 | 200 | 200 |
+| `/components/atoms/buttons/button-icon-overflow/` | 1 | 24 | 200 | 200 |
+| `http://htwoo.io/` | 1 | 17 | 301 | 301 to https |
+| `/components/organism/cards/document-card/` | 1 | 17 | 200 | 200 |
+| `/components/atoms/input/select-drop-down-grouped/` | 1 | 13 | 200 | 200 |
+| `/components/atoms/loading/shimmer-theming-support/` | 1 | 4 | 200 | 200 |
+| `/htwoo-core/patterns/atoms-icons-ql-icon/atoms-icons-ql-icon.rendered.html` | 1 | 1 | 200 | 200 |
+| `/code-of-conduct/` | 0 | 336 | 200 | 200 |
+| `/how-to/svg-instead-of-icon-fonts/` | 0 | 247 | 200 | 200 |
+| `/how-to/how-to-spfx-angular-elements/` | 0 | 237 | 200 | 200 |
+| `/how-to/how-to-spfx-react/` | 0 | 180 | 200 | 200 |
+| `/components/pages/teams/teams-dashboard/` | 0 | 177 | 200 | 200 |
+| `/components/atoms/tooltip/tooltips/` | 0 | 169 | 200 | 200 |
+| `/components/templates/teams/teams-dashboard/` | 0 | 158 | 200 | 200 |
+| `/components/molecules/media/video-player-vimeo/` | 0 | 155 | 200 | 200 |
+| `/components/atoms/input/input-text-invalid/` | 0 | 127 | 200 | 200 |
+| `/case-studies/` | 0 | 96 | 200 | 200 |
+| `/supporters/` | 0 | 93 | 200 | 200 |
+| `/components/atoms/buttons/menu-flyouts/` | 0 | 85 | 200 | 200 |
+| `/components/organism/quick-links-grid/quick-links-button-filled-grid/` | 0 | 54 | 200 | 200 |
+| `/components/molecules/menus/breadcrumb-buttons/` | 0 | 48 | 200 | 200 |
+| `/components/atoms/grid/grid/` | 0 | 39 | 200 | 200 |
+| `/components/design-tokens/colors/greens/` | 0 | 36 | 200 | 200 |
+| `/license/` | 0 | 35 | 200 | 200 |
+| `/components/organism/facepiles/facepile/` | 0 | 33 | 200 | 200 |
+| `/components/atoms/buttons/button-menu/` | 0 | 33 | 200 | 200 |
+| `/components/atoms/buttons/button-action/` | 0 | 32 | 200 | 200 |
+| `/components/molecules/accordion/accordion-content/` | 0 | 31 | 200 | 200 |
+| `/components/molecules/accordion/accordion-header/` | 0 | 28 | 200 | 200 |
+| `/components/organism/quick-links-grid/quick-links-button-no-outline-grid/` | 0 | 27 | 200 | 200 |
+| `/components/atoms/table/table-collapsible/` | 0 | 23 | 200 | 200 |
+| `/components/atoms/typography/headlines/` | 0 | 23 | 200 | 200 |
+| `/components/organism/dialogs/msgbars/` | 0 | 22 | 200 | 200 |
+| `/htwoo-core/?p=atoms-grid-grid` | 0 | 19 | 200 | **FAIL: pattern atoms-grid-grid not found** |
+| `/components/organism/quick-links-grid/quick-links-grid/` | 0 | 18 | 200 | 200 |
+| `/components/atoms/input/input-date-week/` | 0 | 18 | 200 | 200 |
+| `/components/atoms/input/label/` | 0 | 17 | 200 | 200 |
+| `/components/atoms/input/input-prensufix/` | 0 | 16 | 200 | 200 |
+| `/components/molecules/menus/cmdbar-overflow/` | 0 | 15 | 200 | 200 |
+| `/components/atoms/input/input-text-prefixed/` | 0 | 15 | 200 | 200 |
+| `/guidelines/02-principles/` | 0 | 14 | 200 | 200 |
+| `/components/atoms/input/input-text/` | 0 | 14 | 200 | 200 |
+| `/components/design-tokens/icon-overview/` | 0 | 13 | 200 | 200 |
+| `/components/molecules/menus/cmdbar/` | 0 | 13 | 200 | 200 |
+| `/components/atoms/buttons/button-cmd-link/` | 0 | 12 | 200 | 200 |
+| `/components/design-tokens/colors/button-colors/` | 0 | 12 | 200 | 200 |
+| `/htwoo-core/patterns/design-tokens-colors-neutral-colors/design-tokens-colors-neutral-colors.rendered.html` | 0 | 11 | 200 | 200 |
+| `/components/organism/dialogs/generic-dialog/` | 0 | 11 | 200 | 200 |
+| `/components/atoms/typography/blockquote/` | 0 | 11 | 200 | 200 |
+| `/components/atoms/buttons/button-hyperlink-primary/` | 0 | 10 | 200 | 200 |
+| `/components/atoms/input/radiobutton-disabled/` | 0 | 10 | 200 | 200 |
+| `/htwoo-core/patterns/pages/index.html` | 0 | 10 | 200 | 200 |
+| `/htwoo-core/patterns/design-tokens-colors-greens/design-tokens-colors-greens.rendered.html` | 0 | 9 | 200 | 200 |
+| `/htwoo-core/patterns/design-tokens-colors-button-colors/design-tokens-colors-button-colors.rendered.html` | 0 | 9 | 200 | 200 |
+| `/components/molecules/cards-elements/card-title/` | 0 | 9 | 200 | 200 |
+| `/components/organism/quick-links-grid/quick-links-compact-grid/` | 0 | 9 | 200 | 200 |
+| `/components/atoms/tooltip/` | 0 | 9 | 200 | 200 |
+| `/htwoo-core/patterns/templates/index.html` | 0 | 9 | 200 | 200 |
+| `/components/organism/dialogs/dialog-topbar/` | 0 | 8 | 200 | 200 |
+| `/components/atoms/buttons/button-primary/` | 0 | 8 | 200 | 200 |
+| `/components/molecules/dialogs/dialog-header/` | 0 | 8 | 200 | 200 |
+| `/components/atoms/buttons/button-split-primary/` | 0 | 7 | 200 | 200 |
+| `/components/molecules/avatar-with-presence/avatar-presence/` | 0 | 6 | 200 | 200 |
+| `/components/organism/pnp-search-grid/pnp-search-grid/` | 0 | 6 | 200 | 200 |
+| `/components/design-tokens/colors/neutral-colors/` | 0 | 6 | 200 | 200 |
+| `/htwoo-core/patterns/design-tokens-colors-blues/design-tokens-colors-blues.rendered.html` | 0 | 6 | 200 | 200 |
+| `/htwoo-core/patterns/atoms-typography-font-sizes/atoms-typography-font-sizes.rendered.html` | 0 | 6 | 200 | 200 |
+| `/components/molecules/cards-elements/card-image-html/` | 0 | 6 | 200 | 200 |
+| `/components/design-tokens/colors/primary-button-colors/` | 0 | 6 | 200 | 200 |
+| `/components/molecules/webpart-related/webpart-title/` | 0 | 6 | 200 | 200 |
+| `/components/atoms/output/progress-bar/` | 0 | 6 | 200 | 200 |
+| `/components/` | 0 | 5 | 200 | 200 |
+| `/components/atoms/input/input-description/` | 0 | 5 | 200 | 200 |
+| `/guidelines/04-accessibility/` | 0 | 5 | 200 | 200 |
+| `/components/organism/cards/teams-splash-card/` | 0 | 5 | 200 | 200 |
+| `/htwoo-core/patterns/molecules/index.html` | 0 | 5 | 200 | 200 |
+| `/components/molecules/cards-elements/card-image/` | 0 | 5 | 200 | 200 |
+| `/htwoo-core/patterns/design-tokens-colors-primary-colors/design-tokens-colors-primary-colors.rendered.html` | 0 | 4 | 200 | 200 |
+| `/components/atoms/typography/monospace/` | 0 | 4 | 200 | 200 |
+| `/components/atoms/input/input-number/` | 0 | 4 | 200 | 200 |
+| `/components/pages/teams/teams-splash-screen-multi/` | 0 | 4 | 200 | 200 |
+| `/htwoo-core/?p=design-tokens-delete-n-slide` | 0 | 3 | 200 | pattern design-t200ens-delete-n-slide exists |
+| `/components/atoms/validation/success/` | 0 | 3 | 200 | 200 |
+| `/components/atoms/buttons/button-standard/` | 0 | 3 | 200 | 200 |
+| `/components/atoms/loading/shimmer-circle/` | 0 | 3 | 200 | 200 |
+| `/htwoo-core/patterns/design-tokens-colors-templatess/design-tokens-colors-templatess.rendered.html` | 0 | 3 | 200 | 200 |
+| `/components/atoms/typography/paragraph/` | 0 | 3 | 200 | 200 |
+| `/about/` | 0 | 3 | 200 | 200 |
+| `/components/atoms/input/input-text-phone/` | 0 | 3 | 200 | 200 |
+| `/components/molecules/menus/breadcrumb/` | 0 | 3 | 200 | 200 |
+| `/components/molecules/cards-elements/card-location/` | 0 | 3 | 200 | 200 |
+| `/components/molecules/quick-links/ql-list-button-outline-oneline/` | 0 | 3 | 200 | 200 |
+| `/why-htwoo/` | 0 | 3 | 200 | 200 |
+| `/components/molecules/forms/radio-button-group-cols/` | 0 | 3 | 200 | 200 |
+| `/htwoo-core/patterns/organism-dialogs-modal-dialog/organism-dialogs-modal-dialog.rendered.html` | 0 | 3 | 200 | 200 |
+| `/htwoo-core/patterns/molecules-menus/index.html` | 0 | 3 | 200 | 200 |
+| `/components/atoms/input/input-textarea/` | 0 | 3 | 200 | 200 |
+| `/components/organism/cards/document-card-shimmer/` | 0 | 3 | 200 | 200 |
+| `/components/atoms/input/select-drop-down/` | 0 | 3 | 200 | 200 |
+| `/components/atoms/input/checkbox/` | 0 | 2 | 200 | 200 |
+| `/components/organism/form-sample/form-flow-1/` | 0 | 2 | 200 | 200 |
+| `/components/molecules/meta/tag-list-button-primary/` | 0 | 2 | 200 | 200 |
+| `/htwoo-core/patterns/atoms-tooltip-tooltip-top-left/atoms-tooltip-tooltip-top-left.rendered.html` | 0 | 2 | 200 | 200 |
+| `/htwoo-core/?p=atoms-button-context` | 0 | 2 | 200 | pattern atoms-button-context exists |
+| `/components/atoms/input/select-grouped/` | 0 | 2 | 200 | 200 |
+| `/htwoo-core/patterns/atoms-input-input-file/atoms-input-input-file.rendered.html` | 0 | 2 | 200 | 200 |
+| `/htwoo-core/patterns/atoms-input-input-color/atoms-input-input-color.rendered.html` | 0 | 2 | 200 | 200 |
+| `/htwoo-core/patterns/templates-card.grid-card-grid-html/templates-card.grid-card-grid-html.rendered.html` | 0 | 2 | 200 | 200 |
+| `/components/design-tokens/colors/primary-colors/` | 0 | 2 | 200 | 200 |
+| `/htwoo-core/patterns/design-tokens-elevations-elevation/design-tokens-elevations-elevation.rendered.html` | 0 | 2 | 200 | 200 |
+| `/components/molecules/quick-links/ql-list-button-no-outline-oneline/` | 0 | 2 | 200 | 200 |
+| `/htwoo-core/patterns/design-tokens-elevations-elevations/design-tokens-elevations-elevations.rendered.html` | 0 | 2 | 200 | 200 |
+| `/htwoo-core/patterns/atoms-avatar-avatar-96/atoms-avatar-avatar-96.rendered.html` | 0 | 2 | 200 | 200 |
+| `/htwoo-core/patterns/atoms-input-input-text-password/atoms-input-input-text-password.rendered.html` | 0 | 2 | 200 | 200 |
+| `/components/organism/cards/document-card-html/` | 0 | 2 | 200 | 200 |
+| `/components/organism/dialogs/dialog-iframe/` | 0 | 2 | 200 | 200 |
+| `/htwoo-core/?p=organism-quick-links-grid` | 0 | 2 | 200 | pattern organism-quick-links-grid exists |
+| `/htwoo-core/styleguide/html/styleguide.html` | 0 | 2 | 200 | 200 |
+| `/components/organism/form-sample/` | 0 | 2 | 200 | 200 |
+| `/htwoo-core/patterns/atoms-loading-spinner-large/atoms-loading-spinner-large.rendered.html` | 0 | 2 | 200 | 200 |
+| `/htwoo-core/patterns/molecules-accordion-accordion-item/molecules-accordion-accordion-item.rendered.html` | 0 | 2 | 200 | 200 |
+| `/htwoo-core/patterns/organism-facepiles-facepile-64/organism-facepiles-facepile-64.rendered.html` | 0 | 2 | 200 | 200 |
+| `/roadmap/` | 0 | 2 | 200 | 200 |
+| `/guidelines/11-writing/` | 0 | 2 | 200 | 200 |
+| `/guidelines/10-notifications/` | 0 | 2 | 200 | 200 |
+| `/guidelines/09-navigation/` | 0 | 2 | 200 | 200 |
+| `/htwoo-core/patterns/atoms-loading-shimmer-squared/atoms-loading-shimmer-squared.rendered.html` | 0 | 2 | 200 | 200 |
+| `/components/atoms/avatar/presence/` | 0 | 1 | 200 | 200 |
+| `/components/atoms/input/input-time/` | 0 | 1 | 200 | 200 |
+| `/components/molecules/cards-elements/card-splash-title/` | 0 | 1 | 200 | 200 |
+| `/components/molecules/quick-links/ql-list-button-fill-center/` | 0 | 1 | 200 | 200 |
+| `/components/molecules/accordion/accordion-item/` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/patterns/atoms-avatar-avatar-72/atoms-avatar-avatar-72.rendered.html` | 0 | 1 | 200 | 200 |
+| `/components/molecules/forms/checkbox-group-cols/` | 0 | 1 | 200 | 200 |
+| `/components/molecules/meta/tag-list-link/` | 0 | 1 | 200 | 200 |
+| `/components/molecules/quick-links/ql-tiles/` | 0 | 1 | 200 | 200 |
+| `/components/atoms/buttons/button-primary-icon/` | 0 | 1 | 200 | 200 |
+| `/components/molecules/dialogs/dialog-content/` | 0 | 1 | 200 | 200 |
+| `/components/organism/quick-links-grid/quick-links-tiles-grid/` | 0 | 1 | 200 | 200 |
+| `/components/atoms/avatar/presence-all/` | 0 | 1 | 200 | 200 |
+| `/components/atoms/meta/tag-link/` | 0 | 1 | 200 | 200 |
+| `/components/molecules/cards-elements/card-footer/` | 0 | 1 | 200 | 200 |
+| `/components/molecules/forms/checkbox-group-horizontal/` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/patterns/atoms-output-progress-bar/atoms-output-progress-bar.rendered.html` | 0 | 1 | 200 | 200 |
+| `/components/molecules/dialogs/dialog-iframe/` | 0 | 1 | 200 | 200 |
+| `/components/molecules/media/video-thumb/` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/patterns/atoms-icons-ql-icon-svg/atoms-icons-ql-icon-svg.rendered.html` | 0 | 1 | 200 | 200 |
+| `/components/molecules/media/video-overlay/` | 0 | 1 | 200 | 200 |
+| `/components/molecules/meta/tag-list-link-primary/` | 0 | 1 | 200 | 200 |
+| `/components/molecules/meta/tag-list-static-primary/` | 0 | 1 | 200 | 200 |
+| `/components/molecules/persona/persona-overflow/` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/patterns/atoms-grid-grid/atoms-grid-grid.rendered.html` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/patterns/molecules-accordion-accordion-content/molecules-accordion-accordion-content.rendered.html` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/patterns/molecules-avatar-with-presence-avatar-presence/molecules-avatar-with-presence-avatar-presence.rendered.html` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/patterns/molecules-dialogs-dialog-iframe-3by4/molecules-dialogs-dialog-iframe-3by4.rendered.html` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/?p=atoms-shimmer-img-1x1` | 0 | 1 | 200 | pattern atoms-shimmer-img-1x1 exists |
+| `/htwoo-core/patterns/design-tokens-colors-reds/design-tokens-colors-reds.rendered.html` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/patterns/organism-facepiles-facepile/organism-facepiles-facepile.rendered.html` | 0 | 1 | 200 | 200 |
+| `/components/atoms/loading/shimmer-squared/` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/patterns/atoms-loading-shimmer-theming-support/atoms-loading-shimmer-theming-support.rendered.html` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/patterns/design-tokens-colors-teals/design-tokens-colors-teals.rendered.html` | 0 | 1 | 200 | 200 |
+| `/components/molecules/cards-elements/card-splash-footer/` | 0 | 1 | 200 | 200 |
+| `/components/pages/teams/teams-splash-screen/` | 0 | 1 | 200 | 200 |
+| `/components/molecules/quick-links/ql-list-button-outline-center/` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/patterns/atoms-output-progress-bar-steps/atoms-output-progress-bar-steps.rendered.html` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/patterns/molecules-menus-breadcrumb/molecules-menus-breadcrumb.rendered.html` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/?p=molecules-avatar-presence-96` | 0 | 1 | 200 | pattern molecules-avatar-presence-96 exists |
+| `/htwoo-core/patterns/atoms-input-legend/atoms-input-legend.rendered.html` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/patterns/molecules-avatar-with-presence-avatar-showcase/molecules-avatar-with-presence-avatar-showcase.rendered.html` | 0 | 1 | 200 | 200 |
+| `/components/molecules/menus/pivotbar-overflow/` | 0 | 1 | 200 | 200 |
+| `/components/atoms/input/input-datetime-local/` | 0 | 1 | 200 | 200 |
+| `/changelog-core/` | 0 | 1 | 200 | redirect to /changelog/ |
+| `/htwoo-core/patterns/molecules-accordion-accordion-header/molecules-accordion-accordion-header.rendered.html` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/?p=organism-dialog-sidebar-left` | 0 | 1 | 200 | pattern organism-dialog-sidebar-left exists |
+| `/htwoo-core/patterns/atoms-loading-spinner/atoms-loading-spinner.rendered.html` | 0 | 1 | 200 | 200 |
+| `/components/templates/teams/` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/patterns/atoms-input-select/atoms-input-select.rendered.html` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/patterns/molecules-menus-nav-recursion/molecules-menus-nav-recursion.rendered.html` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/patterns/atoms-avatar-avatar-24/atoms-avatar-avatar-24.rendered.html` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/patterns/molecules-quick-links-ql-list-button-outline-center-oneline/molecules-quick-links-ql-list-button-outline-center-oneline.rendered.html` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/patterns/atoms-buttons-button-icon-disabled/atoms-buttons-button-icon-disabled.rendered.html` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/patterns/atoms-buttons-button-primary-icon/atoms-buttons-button-primary-icon.rendered.html` | 0 | 1 | 200 | 200 |
+| `/components/atoms/input/legend/` | 0 | 1 | 200 | 200 |
+| `/components/molecules/quick-links/ql-list-button-no-outline-center/` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/patterns/molecules-webpart-related-webpart-title/molecules-webpart-related-webpart-title.rendered.html` | 0 | 1 | 200 | 200 |
+| `/components/organism/cards/document-card-click/` | 0 | 1 | 200 | 200 |
+| `/components/atoms/input/input-date/` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/patterns/organism-quick-links-grid-quick-links-grid-12c/organism-quick-links-grid-quick-links-grid-12c.rendered.html` | 0 | 1 | 200 | 200 |
+| `/components/molecules/media/video-player-html/` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/patterns/organism-cards-document-card-shimmer/organism-cards-document-card-shimmer.rendered.html` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/patterns/organism-dialogs-dialog-sidebar/organism-dialogs-dialog-sidebar.rendered.html` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/patterns/atoms-loading-shimmer-theme-inline-primary/atoms-loading-shimmer-theme-inline-primary.rendered.html` | 0 | 1 | 200 | 200 |
+| `/htwoo-core/patterns/molecules-menus-breadcrumb-buttons/molecules-menus-breadcrumb-buttons.rendered.html` | 0 | 1 | 200 | 200 |
+| `/guidelines/07-data-validation/` | 0 | 1 | 200 | 200 |
+| `/components/atoms/buttons/buttons-disabled/` | 0 | 1 | 200 | 200 |
+
+### Legacy paths from lab.n8d.studio/htwoo/ backlinks (9)
+
+| URL (on htwoo.io) | Clicks | Impr. | Fork status | Result |
+|---|---|---|---|---|
+| `/htwoo-core/` | 0 | 0 | 200 | 200 |
+| `/htwoo-core` | 0 | 0 | 301 | 301 to /htwoo-core/ |
+| `/htwoo-core/?p=organism-msgbars` | 0 | 0 | 200 | pattern organism-msgbars exists |
+| `/htwoo-core/?p=all` | 0 | 0 | 200 | view all exists |
+| `/htwoo-react/?path=/story/advanced-genericthemes-class--page` | 0 | 0 | 200 | **FAIL: story advanced-genericthemes-class--page not found** |
+| `/htwoo-react/?path=/story/advanced-spfxthemes-class--page` | 0 | 0 | 200 | **FAIL: story advanced-spfxthemes-class--page not found** |
+| `/changelog/htwoo-core-cl/` | 0 | 0 | 200 | redirect to /changelog/ |
+| `/how-to/how-to-spfx-react.html` | 0 | 0 | 200 | redirect to /how-to/how-to-spfx-react/ |
+| `/how-to/how-to-spfx-angular-elements.html` | 0 | 0 | 200 | redirect to /how-to/how-to-spfx-angular-elements/ |

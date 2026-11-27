@@ -20,17 +20,21 @@ Status at the end of the rehearsal (Phase 5, 2026-11-27): htwoo `pd-migration` a
   doesn't run `docs:components`, and the three paths under `/htwoo-components/layouts/` are 404 on the fork.
 - Acceptance 9: green, three triggers by configuration only (replay 4.16); their first real runs are recorded
   after the merge (brief, Part 1 step 4.7).
+- Phase 6 (launch round, 2026-11-27, replay Phase 6): menu, code contrast, CDN links and the GA tag fixed; the
+  fork is `noindex` and the htwoo.io build indexed; 208 of the 209 Search Console URLs answer 200 or redirect to
+  the right page on the fork (the one left is a Pattern Lab deep link that fails on htwoo.io too, F-51); launch
+  checklist, order, rollback and smoke test in the brief, Part 1 step 4.
 
-43 findings:
+51 findings:
 
 | Tag | Fixed | Workaround | Won't fix | Decided | Open |
 |---|---|---|---|---|---|
-| `[PD-GAP]` (15) | 5: F-01, F-03, F-32, F-36, F-37 | 4: F-04, F-07, F-27, F-33 | 4: F-05, F-06, F-08, F-34 | | 2: F-02, F-26 |
-| `[SUBJECT-DEBT]` (23) | 4: F-20, F-28, F-29, F-35 | | | 1: F-30 | 18: F-09 to F-19 (F-16 in part), F-21, F-22, F-31, F-38, F-40, F-41, F-43 |
-| `[FORK-ONLY]` (5) | | | | 1: F-25 | 4: F-23, F-24, F-39, F-42 |
+| `[PD-GAP]` (17) | 5: F-01, F-03, F-32, F-36, F-37 | 6: F-04, F-07, F-27, F-33, F-48, F-49 | 4: F-05, F-06, F-08, F-34 | | 2: F-02, F-26 |
+| `[SUBJECT-DEBT]` (28) | 9: F-15, F-20, F-28, F-29, F-35, F-44, F-45, F-46, F-50 | | | 1: F-30 | 18: F-09 to F-14, F-16 (in part) to F-19, F-21, F-22, F-31, F-38, F-40, F-41, F-43, F-51 |
+| `[FORK-ONLY]` (6) | 1: F-47 | | 1: F-23 (expected) | 1: F-25 | 3: F-24, F-39, F-42 |
 
 - `[PD-GAP]` open: PD's job, neither blocks the switch (each has its interim: changelog links to GitHub, the
-  menu by hand).
+  menu by hand). F-48 and F-49 (redirects) have workarounds and are PD's backlog too.
 - `[SUBJECT-DEBT]` open: hTWOo's own, outside this migration. The 18 go to htwoo-core as issues after the switch
   (not opened yet); the four with a known cause are in "Upstream fixes" below, F-40, F-41, F-43 go with the
   htwoo-core step.
@@ -54,7 +58,7 @@ Status at the end of the rehearsal (Phase 5, 2026-11-27): htwoo `pd-migration` a
 | F-12 | [SUBJECT-DEBT] | htwoo | npm has `@n8d/htwoo-core` 2.9.2 from a commit `main` doesn't contain (main: 2.7.3) | open |
 | F-13 | [SUBJECT-DEBT] | htwoo | Deployed `/htwoo-core/css/` is the committed file; tracked build outputs are stale | open |
 | F-14 | [SUBJECT-DEBT] | htwoo | Storybook and Pattern Lab load files from other hosts, two of them 404 | open |
-| F-15 | [SUBJECT-DEBT] | htwoo | Google Analytics tag `G-40524BBS9G` returns 404: GA collects nothing | open |
+| F-15 | [SUBJECT-DEBT] | htwoo | Google Analytics tag `G-40524BBS9G` returns 404: GA collects nothing | fixed: tag removed (`7f0340862`); 404 on htwoo.io too |
 | F-16 | [SUBJECT-DEBT] | htwoo, theme | Broken or missing pages today: no 404 page, `/imprint` 404, links without trailing slash | open in part: 404 page fixed (PD's `/404.html`); `/imprint` and slashless links open |
 | F-17 | [SUBJECT-DEBT] | htwoo | `components-sitemap.xml` leaves out 35 section pages | open |
 | F-18 | [SUBJECT-DEBT] | htwoo | Website changelog copies are stale and hold entries the package changelogs lack | open |
@@ -62,7 +66,7 @@ Status at the end of the rehearsal (Phase 5, 2026-11-27): htwoo `pd-migration` a
 | F-20 | [SUBJECT-DEBT] | theme | Unused or empty theme parts (media, YouTube, cards, footer, general, 404) | fixed in theme: dropped (decision 4) |
 | F-21 | [SUBJECT-DEBT] | htwoo | `docs/ver/` is 979 tracked files of 2021 style guide snapshots, not served | open |
 | F-22 | [SUBJECT-DEBT] | htwoo | Front matter that Hugo ignored or that PD will refuse | open |
-| F-23 | [FORK-ONLY] | htwoo | typography.com refuses the fork's host: brand fonts don't load on `stfbauer.github.io` | open; parity checked locally (decision) |
+| F-23 | [FORK-ONLY] | htwoo | typography.com refuses the fork's host: brand fonts don't load on `stfbauer.github.io` | won't fix: expected (licence bound to htwoo.io, which loads it); in the launch smoke test |
 | F-24 | [FORK-ONLY] | htwoo | Under the `/htwoo/` base path PD writes no `robots.txt` | open |
 | F-25 | [FORK-ONLY] | htwoo, theme | Fork setup gaps: Pages environment allows `main` only; `HTWOO_DISPATCH_TOKEN` missing | decided 2026-11-27: no dispatch, so no token; `pd-migration` in the Pages environment (Stefan) |
 | F-26 | [PD-GAP] | htwoo, theme | A navigation entry can't be a page with children, nor list a folder's pages | open; menu by hand in `site.globals` |
@@ -83,6 +87,14 @@ Status at the end of the rehearsal (Phase 5, 2026-11-27): htwoo `pd-migration` a
 | F-41 | [SUBJECT-DEBT] | htwoo | The modal dialog iframe pattern loads its page from the host's root: 404 | open |
 | F-42 | [FORK-ONLY] | htwoo | On the fork the frozen `/components/` pages load and link htwoo.io's files (`<base href>`) | open; correct after the switch |
 | F-43 | [SUBJECT-DEBT] | htwoo | Pattern Lab's theme switch fetches its theme file from outside `/htwoo-core/`: 404 | open |
+| F-44 | [SUBJECT-DEBT] | theme | The menu is its own scroll area and every entry is sticky | fixed in theme `13bc786`, verified |
+| F-45 | [SUBJECT-DEBT] | theme | Code colours fail 4.5:1 (comment 3.03:1, pink 3.93:1) | fixed in theme `a013637`, verified |
+| F-46 | [SUBJECT-DEBT] | htwoo | The CDN instructions link unpkg's file viewer, and a script tag ends in a folder | fixed (`2dc7e4407`) |
+| F-47 | [FORK-ONLY] | htwoo | The fork's deploy competes with htwoo.io in search | fixed: `site.index` only for `https://htwoo.io/` (`dd42a4dc6`) |
+| F-48 | [PD-GAP] | htwoo | `redirectFrom` can't forward to an external URL | workaround: old changelog URLs to `/changelog/` (`28c7e15a3`) |
+| F-49 | [PD-GAP] | htwoo | `redirectFrom` takes only routes ending in `/` | workaround: redirect pages in a mount (`2dbc7af76`) |
+| F-50 | [SUBJECT-DEBT] | htwoo | Pages without a description, and repeated titles and descriptions | fixed for the website's pages (`a5942cded`); frozen pages as built |
+| F-51 | [SUBJECT-DEBT] | htwoo | Old style guide deep links land on the tools' "not found" (`?p=atoms-grid-grid`, Storybook `--page`) | open |
 
 ## Upstream fixes (hTWOo, outside this migration)
 
@@ -236,6 +248,10 @@ them, and each needs its own fix in n8design/htwoo.
   parts' own). Or accept: resubmit sitemaps in the search consoles (Stefan decides).
 - Decided 2026-11-25: dropped; PD's `/sitemap.xml` stays. `/sitemap-pages.xml` and `/components-sitemap.xml`
   go away (resubmit in the search consoles at the switch).
+- Phase 6 (2026-11-27): robots.txt of the build for htwoo.io names only `Sitemap: https://htwoo.io/sitemap.xml`
+  (plus PD's `Disallow: /preview/`), with no note about deprecated sitemaps; `/components-sitemap.xml` and
+  `/sitemap-pages.xml` aren't in the output (404 on the fork; GitHub Pages answers 404 for any missing file).
+  Removing them in Search Console is Stefan's step after the launch (brief, Part 1 step 4).
 - Decided 2026-11-26: `/htwoo-core/sitemap.xml`, Pattern Lab's own (one URL, new in the output: `hugo.yml`
   deleted it), stays. The mount publishes it byte for byte and nothing references it: it isn't in
   `/sitemap.xml` or `robots.txt`.
@@ -255,6 +271,10 @@ them, and each needs its own fix in n8design/htwoo.
 - Proposed fix: drop with this finding (Stefan decides), or a PD feed feature. The 6 non-component feeds
   would 404.
 - Decided 2026-11-25: dropped. The theme's `rss.html` is gone (theme `e934224`).
+- Phase 6 (2026-11-27, Acceptance 10's 19 URLs): the 6 feeds stay dropped. None of them has impressions in Search
+  Console (12 months), a redirect page can't stand in for XML (feed readers don't follow a meta refresh), and no
+  page links them. PD 0.10 has feeds now (`site.feeds`, with `path: index.xml` to keep the address), so they can
+  come back as a feature if wanted.
 - Applies upstream: yes
 
 ### F-07 [PD-GAP] Listing entries can't carry a page's own fields
@@ -411,14 +431,19 @@ them, and each needs its own fix in n8design/htwoo.
 
 ### F-15 [SUBJECT-DEBT] Google Analytics tag returns 404
 
-- Status: open (the GA decision is open in the brief; carried over as is until Stefan decides)
+- Status: fixed in htwoo `7f0340862` (Phase 6): the tag is removed from the website's head
 - Phase: 0
 - Reproduce: `curl -s -o /dev/null -w '%{http_code}' 'https://www.googletagmanager.com/gtag/js?id=G-40524BBS9G'`
   → `404`
+- Phase 6 (2026-11-27, `<baseline>/scripts/phase6-thirdparty.sh`): htwoo.io's home loads the same ID
+  (`googletagmanager.com/gtag/js?id=G-40524BBS9G`), and it answers 404 with no referrer, with htwoo.io's and with the
+  fork's: it fails on htwoo.io too, not only on the fork. Removed from `website/head.hbs`; Ahrefs Web Analytics stays.
+  The frozen `/components/` pages keep the tag as Hugo built them (no new work goes into them); it loads nothing
+  there either. A new GA property would be a new decision.
 - Actual: the tag is on every page (twice defined: `docs` branch `layouts/partials/ga.html` overrides the
   theme's), but Google serves nothing for the ID. Ahrefs Web Analytics (`analytics.ahrefs.com`, theme
   `ahrefs.html`) loads fine.
-- Proposed fix: Stefan decides: drop GA, or a new ID. Input for the open decision.
+- Proposed fix: Stefan decides: drop GA, or a new ID. Input for the open decision. Done: dropped (Phase 6).
 - Applies upstream: yes
 
 ### F-16 [SUBJECT-DEBT] Broken or missing pages today
@@ -552,7 +577,14 @@ them, and each needs its own fix in n8design/htwoo.
 
 ### F-23 [FORK-ONLY] typography.com refuses the fork's host
 
-- Status: open
+- Status: expected on the fork (a licence bound to the domain), nothing changed; in the launch smoke test (Phase 6)
+- Phase 6 (2026-11-27, `<baseline>/scripts/phase6-thirdparty.sh`): htwoo.io's pages load
+  `https://cloud.typography.com/6828898/6636612/css/fonts.css`. For htwoo.io's referrer (and with none) it answers
+  302 to `https://htwoo.io/889032/2F9E0D2024732B3BD.css`, the font package the site serves from `site-root/889032/`;
+  for the fork's referrer it answers 403 (`/* Direct CSS access unavailable … */`). The font project is licensed
+  to htwoo.io, so the 403 is expected on the fork and needs no change. After the switch the smoke test checks that
+  the brand fonts load on htwoo.io (brief, Part 1 step 4). It is also the console error behind the fork's
+  Lighthouse "Best practices" score.
 - Phase: 0
 - Reproduce: `curl -s -H 'Referer: https://stfbauer.github.io/htwoo/'
   https://cloud.typography.com/6828898/6636612/css/fonts.css` → `/* Direct CSS access unavailable … */`
@@ -807,6 +839,9 @@ them, and each needs its own fix in n8design/htwoo.
   Content images: Stefan decides: accept (only search engines' image results and hotlinks know them), or
   mount `website/images/` at `/images/` and the five screenshots at `/how-to/` with the F-01 feature, so the
   old addresses keep answering.
+- Phase 6 (2026-11-27, Acceptance 10's 19 URLs): the 7 old image URLs stay dropped, as decided. None is among the
+  209 URLs with impressions in Search Console (web search, 12 months); the pages that showed them link the new
+  URLs; an image can't be redirected by a redirect page.
 - Applies upstream: yes
 
 ### F-35 [SUBJECT-DEBT] The bump commit format breaks commitlint's subject rule
@@ -975,4 +1010,179 @@ them, and each needs its own fix in n8design/htwoo.
 - Actual: from `/htwoo-core/` the path leaves the style guide and asks for `/js/themeswitch/…`: 404 on
   htwoo.io today, `/htwoo/js/…` on the fork (also 404); pattern pages two levels deep resolve it correctly.
 - Proposed fix: in hTWOo: resolve the path against the style guide's root, not the page.
+- Applies upstream: yes
+
+### F-44 [SUBJECT-DEBT] The menu is its own scroll area and every entry is sticky
+
+- Status: fixed in theme `13bc786` (Phase 6), verified on the fork
+- Phase: 6
+- Repo and commit: theme `ab89060`; fixed in `13bc786`, live with htwoo `635e69830`
+- Where: `src/styles/partials/header.scss` (`.header-main`: sticky, `height: 100vh`), `src/styles/partials/nav.scss`
+  (`.header-nav`: `overflow-y: auto`; `.menu-main .menu-item { position: sticky; top: 0 }`, also on the open
+  narrow-screen menu, itself `overflow-y: scroll` at `calc(100vh - 4rem)`), `src/scripts/site.ts` (the open menu
+  set `body { overflow: hidden }`), `src/styles/partials/base.scss` (menu column `minmax(250px, 15vw)`)
+- Reproduce: `<baseline>/scripts/phase6-menu.cjs <playwright> <base> <shots>`: 390 px and 1280 px, text at 100 %
+  and 200 % (root font size), light and dark (`prefers-color-scheme`); the narrow menu is opened first.
+- Expected: the menu scrolls with the page; no scroll area of its own, no sticky entries; every entry reachable;
+  nothing overlaps.
+- Actual (before, deployed fork, log `<baseline>/logs/phase6-menu.log`): all 8 cases fail. At 1280 px the nav is a
+  scroll area, 21 sticky entries pile up when scrolled (5 overlaps at 100 %, 15 at 200 %, 3 entries out of reach at
+  200 %), the menu doesn't move with the page; at 390 px the open menu is a scroll area, body scrolling is locked,
+  2 to 8 overlaps.
+- Fix: the header column is as long as the page and scrolls with it; no entry is sticky; the menu column is sized in
+  rem (`minmax(15.625rem, 15vw)`), so entries fit at 200 % text (at 250 px "CHANGELOGS" and "Framework" ran past
+  the column). On a narrow screen the bar stays at the top while the menu is closed; the open menu hangs below it,
+  as long as its entries, and scrolls with the page (the bar lets go of the top, `:has()`), and opening it scrolls
+  to the top instead of locking the body.
+- After (deployed fork, run 45990532043): all 8 cases pass: no scroll area, no sticky element, the menu moves
+  with the page, every entry reachable, no overlaps, body scrolls. Screenshots `<baseline>/phase6/menu-served/`.
+  The theme has no dark scheme (`color-scheme: light`); in dark mode the menu reads as in light (`rgb(38, 38, 38)`
+  on `rgb(240, 240, 240)`).
+- Applies upstream: yes
+
+### F-45 [SUBJECT-DEBT] Code colours fail 4.5:1
+
+- Status: fixed in theme `a013637` (Phase 6), verified on the fork
+- Phase: 6
+- Repo and commit: theme `ab89060`; fixed in `a013637`, live with htwoo `635e69830`
+- Where: `src/styles/document/_code.scss`: the Monokai values of `--pd-code-*` on `#272822`
+- Reproduce: `python3 -I <baseline>/scripts/phase6-contrast.py` (the values), `node
+  <baseline>/scripts/phase6-code-contrast.cjs <playwright> <base>` (every highlighted token on six pages with code,
+  computed colour against its `<pre>`).
+- Before → after (WCAG 2 ratio on `#272822`; a failing colour is lightened at its own hue and saturation until it
+  passes):
+
+  | Token | Before | Ratio | After | Ratio |
+  |---|---|---|---|---|
+  | `--pd-code-comment` | `#75715e` | 3.03:1 | `#938e78` | 4.52:1 |
+  | `--pd-code-keyword` | `#f92672` | 3.93:1 | `#fa4989` | 4.51:1 |
+  | `--pd-code-tag` | `#f92672` | 3.93:1 | `#fa4989` | 4.51:1 |
+  | `--pd-code-property` | `#f92672` | 3.93:1 | `#fa4989` | 4.51:1 |
+  | `--pd-code-text`, `--pd-code-expression` | `#f8f8f2` | 13.94:1 | unchanged | 13.94:1 |
+  | `--pd-code-string` | `#e6db74` | 10.44:1 | unchanged | 10.44:1 |
+  | `--pd-code-storage`, `--pd-code-value`, `--pd-code-support` | `#66d9ef` | 9.01:1 | unchanged | 9.01:1 |
+  | `--pd-code-attribute`, `--pd-code-function` | `#a6e22e` | 9.58:1 | unchanged | 9.58:1 |
+  | `--pd-code-parameter` | `#fd971f` | 6.81:1 | unchanged | 6.81:1 |
+  | `--pd-code-constant` | `#ae81ff` | 5.23:1 | unchanged | 5.23:1 |
+
+- After (deployed fork): every token class on the pages passes; lowest 4.51:1 (keyword, tag, property).
+- Applies upstream: yes
+
+### F-46 [SUBJECT-DEBT] The CDN instructions link unpkg's file viewer, and a script tag ends in a folder
+
+- Status: fixed in htwoo `2dc7e4407` (Phase 6)
+- Phase: 6
+- Repo and commit: htwoo `4beb7f431` (content from `docs` `bc889ced5`); fixed in `2dc7e4407`
+- Where: `website/pages/getting-started.md`, "CDN Support"
+- Reproduce: `curl -sL -o /dev/null -w '%{content_type}' https://unpkg.com/browse/@n8d/htwoo-core@2.9.2/dist/css/htwoo.min.css`
+  → `text/html` (unpkg's viewer page); `…/dist/js/` → `text/html` (a folder listing).
+- Fix: direct file URLs of the published package, at the current version: `https://unpkg.com/@n8d/htwoo-core@2.9.2/dist/css/htwoo.min.css`
+  → 200 `text/css; charset=utf-8`, 120207 B; `https://unpkg.com/@n8d/htwoo-core@2.9.2/dist/js/umd/htwoo.min.js` →
+  200 `text/javascript; charset=utf-8`, 15590 B (`<baseline>/scripts/phase6-cdn.sh` on the served page). The viewer
+  link stays as a link for browsing the package, at 2.9.2 instead of 0.4.0-beta2. 2.9.2 is npm's `latest`, from a
+  commit `main` doesn't contain (F-12).
+- Applies upstream: yes
+
+### F-47 [FORK-ONLY] The fork's deploy competes with htwoo.io in search
+
+- Status: fixed in htwoo `dd42a4dc6` (Phase 6), verified on the fork
+- Phase: 6
+- Repo and commit: htwoo `4beb7f431`; fixed in `dd42a4dc6`
+- Where: `website/pattern-dump.config.ts` (`site.url` from `SITE_URL`, no `site.index`)
+- Reproduce: `curl -s https://stfbauer.github.io/htwoo/getting-started/ | grep -o '<link rel="canonical"[^>]*>'`
+- Actual (before): the PD pages on the fork carried their fork canonical (`https://stfbauer.github.io/htwoo/…`)
+  and no `noindex`, so the fork was a second, indexable copy of htwoo.io. The frozen `/components/` pages carry
+  htwoo.io's canonical and were fine.
+- Fix: `site.index` follows the address the build is for: on for exactly `https://htwoo.io/`, off for any other.
+  Off is PD's staging mode: every page `noindex`, `robots.txt` disallowing everything, no sitemap, no `llms.txt`.
+  How it's switched: the deploy workflow sets `SITE_URL` from `actions/configure-pages`' `base_url`, which is the
+  repo's Pages address: `https://htwoo.io` on n8design/htwoo (custom domain, read 2026-11-27: `html_url`
+  `https://htwoo.io/`, HTTPS enforced), `https://stfbauer.github.io/htwoo` on the fork. Nothing fork-specific is
+  in the code, so nothing has to be left out of the upstream PR, and the upstream output can't be noindex unless
+  its Pages address isn't `https://htwoo.io/` (then canonicals would be wrong too). The launch smoke test checks
+  it (brief, Part 1 step 4).
+- After: fork build: every PD page `noindex`, `/sitemap.xml` and `/llms.txt` 404 (robots.txt isn't written under a
+  base path, F-24). htwoo.io build (`SITE_URL=https://htwoo.io/`, full clean build at `635e69830`): no `noindex`,
+  every canonical, the sitemap and `robots.txt` on `https://htwoo.io`.
+- Left: the fork's mounted Pattern Lab and Storybook pages (byte copies) have no `noindex` and no canonical, and
+  `stfbauer.github.io/robots.txt` isn't this repo's. They are htwoo-core's and htwoo-react's pages, as on htwoo.io.
+- Applies upstream: yes (the switch is in the config; on htwoo.io it changes nothing)
+
+### F-48 [PD-GAP] `redirectFrom` can't forward to an external URL
+
+- Status: workaround (Phase 6): the three old changelog URLs forward to `/changelog/`, which links both change logs
+- Phase: 6
+- Repo and commit: htwoo `28c7e15a3`, PD 0.10.1
+- Where: `website/pages/changelog/index.md`
+- Reproduce: PD's `redirectFrom` is a list of old routes on the page they forward to; there is no field for a
+  target that isn't a page (`dist/pd.js`, `redirectsOf`, `redirectStub`).
+- Expected: `/changelog/htwoo-react-cl/` (271 impressions in 12 months) → the React change log on GitHub,
+  `/changelog/htwoo-core-cl/` (122) and `/changelog-core/` (1) → the core change log on GitHub (F-02 links them
+  there).
+- Actual: all three forward to `/changelog/` (PD's redirect page: meta refresh, `noindex`, canonical
+  `/changelog/`), which now links both change logs (`f2cc366e6`; it was an empty listing). Checked on the fork: each
+  200 with a refresh to `/htwoo/changelog/`, which is 200.
+- Proposed fix: in PD: redirects to an external URL (a `site.redirects` map, or a page front matter `redirectTo`).
+  Until then a static redirect page in a mount (as F-49 does) could forward to GitHub; not done, as decided.
+- Applies upstream: yes
+
+### F-49 [PD-GAP] `redirectFrom` takes only routes ending in `/`
+
+- Status: workaround (`PD-WORKAROUND: F-49`): two redirect pages in a mount
+- Phase: 6
+- Repo and commit: htwoo `2dbc7af76`, PD 0.10.1
+- Where: `website/legacy/` (`README.md`), `site.mounts` in `website/pattern-dump.config.ts`
+- Reproduce: `redirectFrom: /how-to/how-to-spfx-react.html` in `pages/how-to/how-to-spfx-react.md`; `pd build` →
+  `redirectFrom: "/how-to/how-to-spfx-react.html" is not a route: each old route starts and ends with "/" …`
+- Expected: `/how-to/how-to-spfx-react.html` and `/how-to/how-to-spfx-angular-elements.html` (backlinks to
+  `lab.n8d.studio/htwoo/…`, which forwards to the same path on htwoo.io; both 404 on htwoo.io today) forward to
+  their `/` pages.
+- Actual: PD refuses the route. Workaround: `website/legacy/how-to/*.html`, redirect pages written like PD's own
+  (relative meta refresh, so they work under a base path; `noindex`; canonical on htwoo.io), mounted at `/how-to/`,
+  not in the sitemap. Checked on the fork: each 200 with a refresh to its page, which is 200.
+- Proposed fix: in PD: `redirectFrom` accepts a file path (`/old/page.html`) and writes the redirect page at it.
+- Applies upstream: yes
+
+### F-50 [SUBJECT-DEBT] Pages without a description, and repeated titles and descriptions
+
+- Status: fixed for the website's pages in htwoo `a5942cded` (Phase 6); the frozen component pages stay as built
+- Phase: 6
+- Repo and commit: htwoo `4beb7f431`; fixed in `a5942cded`, `f2cc366e6`
+- Where: `website/pages/**` front matter
+- Reproduce: `node <baseline>/scripts/phase6-seo.cjs <site> https://htwoo.io/` on a build for htwoo.io: title,
+  description, canonical, social image and robots of every page, duplicates, sitemap against the built pages.
+- Actual (before, `<baseline>/phase6/seo-before.txt`): 35 PD pages and 250 frozen pages; every PD page has a
+  self canonical on htwoo.io and a social image; the sitemap has exactly the 277 indexable pages (27 PD + 250
+  frozen). Gaps: 14 PD pages without a description, the 404 page aside (about, changelog, code-of-conduct, flavor, guidelines, how-to,
+  svg-instead-of-icon-fonts, license, release-history, supporters and its three pages, why-htwoo with an empty
+  one); `/guidelines/` and `/guidelines/01-index/` both titled "Guidelines"; `/case-studies/` with the home page's
+  description; 7 repeated titles and 7 repeated descriptions among the frozen component pages.
+- Fix: one plain sentence per missing description (13 in `a5942cded`, the changelog page's in `f2cc366e6`), a description of its own for case studies, "Guidelines
+  overview" for `/guidelines/01-index/`. The rewrite of titles and descriptions comes after the launch.
+- After (`<baseline>/phase6/seo-after.txt`, full clean build at `635e69830`): every PD page has a title, a
+  description, a self canonical on htwoo.io and a social image; no repeats among them; sitemap = the 277 indexable
+  pages, nothing missing or extra; the 5 redirect pages are `noindex` and outside it. Left: the 404 page (no
+  description or social image, `noindex`); `noindex` on about, flavor, roadmap, why-htwoo (F-31, Stefan decides)
+  and the three supporter pages; the frozen pages' 7 repeated titles and descriptions (no new work goes into them;
+  the htwoo-core step replaces them); Pattern Lab's and Storybook's own heads (htwoo-core, htwoo-react).
+- Applies upstream: yes
+
+### F-51 [SUBJECT-DEBT] Old style guide deep links land on the tools' "not found"
+
+- Status: open (htwoo-core and htwoo-react are read-only in this step)
+- Phase: 6
+- Repo and commit: htwoo `635e69830` (htwoo-core and htwoo-react unchanged since `2297b8114`)
+- Where: `/htwoo-core/?p=<pattern>` (Pattern Lab), `/htwoo-react/?path=/story/<id>` (Storybook)
+- Reproduce: `<baseline>/scripts/phase6-gsc-urls.py` checks each such URL against the served
+  `styleguide/data/patternlab-data.js` or `index.json`; in a browser the page is 200 for any value.
+- Actual, on htwoo.io today and on the fork alike (same builds, byte for byte):
+  - `/htwoo-core/?p=atoms-grid-grid` (19 impressions in 12 months): Pattern Lab shows "Oh snap, a 404!"; the
+    pattern's partial is `atoms-grid` (`atoms-grid-grid` is its file name).
+  - `/htwoo-react/?path=/story/advanced-genericthemes-class--page` and `…/advanced-spfxthemes-class--page`
+    (backlinks via `lab.n8d.studio/htwoo/`): "Couldn't find story matching …"; the pages are now
+    `advanced-genericthemes-class--docs` and `advanced-spfxthemes-class--docs`.
+  - The other `?p=` URLs (7 from Search Console, `organism-msgbars`, `all`) resolve.
+- Proposed fix: in hTWOo: Pattern Lab and Storybook resolve the query in the browser, so a static host can't
+  redirect it. Pattern Lab: accept a pattern's file name as `?p=`; Storybook: map the old `--page` ids to `--docs`
+  in `.storybook/manager` (a redirect on load).
 - Applies upstream: yes
