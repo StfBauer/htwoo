@@ -1146,6 +1146,90 @@ over (step 8).
 
 The round ends here. No `pd-upstream` branch was cut and no PR opened.
 
+## Launch (n8design/htwoo, n8design/htwoo-theme, 2026-11-27)
+
+The upstream PRs (brief, Part 1 step 4): theme n8design/htwoo-theme#1 (18 commits, cherry-picked from `pd` with
+`-x`) and n8design/htwoo#188 (33 commits from `pd-migration`, pins re-pointed; log commits and the two `chore(fork)`
+commits left out). Launched by Claude Code on Stefan's go, in the order of the brief, Part 1 section 5.2.
+
+### L.1 Steps
+
+| Step | What | Result |
+|---|---|---|
+| 5.1 | Settings read (`gh api`) | Pages source GitHub Actions (`build_type: workflow`), `cname: htwoo.io`, HTTPS enforced, certificate approved until 2027-02-09, environment `github-pages` allows `main` and `docs` |
+| 5.1 | Ruleset `freeze-docs` created | id **28235193**: branch `docs`, enforcement active, rules update, deletion, non-fast-forward, no bypass. Stefan had planned to create it; it wasn't there at the launch, so it was created before the merge as the order requires |
+| 1 | Theme PR #1 merged, merge commit | `3e7a696f6` |
+| 2–3 | `git fetch`, `merge-base --is-ancestor` for the six pins | `b817fea`, `6b1465a`, `a15b5a0`, `0cb5372`, `dcf08a6`, `3b30f04`: all ok |
+| 4 | htwoo PR #188 merged, merge commit | `512f1c405`; the push started "Deploy the website" run **46003094257**; Hugo didn't run (`hugo.yml` gone from `main`) |
+| 5 | Pages source | still GitHub Actions, no switch |
+| 6 | `workflow_dispatch` on `main` | run **46003134694** |
+| 7 | Both runs | green (build and deploy), 12:58–13:01 UTC |
+
+### L.2 Smoke test (section 5.4), htwoo.io, cache bypassed
+
+`<baseline>/scripts/launch-smoke.sh` and `launch-browser.cjs`, log `<baseline>/logs/launch-smoke.log`:
+
+- Home, `/getting-started/`, `/how-to/how-to-spfx-html/`, `/changelog/`: 200, Pattern Dump; component page
+  `/components/atoms/buttons/button-primary/`: 200; all render with their stylesheets, no failed requests.
+- Menu (as it was then, F-44 first fix): 8 of 8 cases pass (`phase6-menu.cjs`).
+- `/htwoo-core/?p=organism-msgbars` opens the pattern; `/htwoo-react/` loads the GenericThemes docs.
+- `/changelog/htwoo-react-cl/`, `/changelog/htwoo-core-cl/`, `/changelog-core/` → `/changelog/`;
+  `/how-to/how-to-spfx-react.html`, `/how-to/how-to-spfx-angular-elements.html` → their `/` pages.
+- `/no-such-page/`: 404, "Page not found". `http://htwoo.io/` → 301 `https://htwoo.io/`.
+- Canonical `https://htwoo.io/`, no `noindex`; robots.txt names only `Sitemap: https://htwoo.io/sitemap.xml`;
+  `/sitemap.xml` 200, 264 URLs, all on htwoo.io; `/components-sitemap.xml` and `/sitemap-pages.xml` 404.
+- No `googletagmanager.com` request on the site's own pages (the frozen component pages keep their tag); Ahrefs
+  loads.
+- Fonts: `fonts.css` → 302 → `https://htwoo.io/889032/….css`, 200; but the brand font didn't apply: the theme
+  asked for "Gotham A/B", the project serves "Gotham SSm A/B" (F-52; the Hugo site had the same mismatch).
+
+### L.3 Rollback (not used)
+
+`gh workflow run hugo.yml --ref docs -R n8design/htwoo` (the `docs` branch keeps `hugo.yml`; the ruleset doesn't
+block running a workflow), then `git revert -m 1 512f1c405` as a pull request, merged. Brief, Part 1 section 5.3.
+
+### L.4 Navigation correction (theme n8design/htwoo-theme#2, Stefan, 2026-11-27)
+
+F-44's first fix (the menu scrolling with the page) was the wrong call: the sidebar is sticky again, as on the
+Hugo site, without the original bug. Theme `4993f8c`, merged with merge commit `1287e2b6d`. `nav-sticky.cjs`
+(long page, 390 and 1280 px, text 100 and 200 %, light and dark): 8 of 8 locally and on htwoo.io after L.6.
+
+### L.5 Font fix (theme n8design/htwoo-theme#3)
+
+F-52. One token `--font-prim` ("Gotham SSm A", "Gotham SSm B", metric-matched fallback faces, the system stack),
+the fallbacks measured for Gotham SSm (`font-measure.cjs`, `<baseline>/logs/font-measure.log`). Theme `6daa6e9`,
+merged with merge commit `a3766ba`; built and checked together with #2 before merging.
+
+### L.6 First real pin bump (Acceptance 9, brief, Part 1 step 4.7)
+
+| | |
+|---|---|
+| Commit | `e04240ef2` `chore(deps): Bump htwoo-theme to a3766ba` (by hand, its own commit, from `main` `512f1c405`) |
+| Pull request | n8design/htwoo#189, merged with merge commit `2fb029969` |
+| Deploy run | **46006244176** (push, `2fb029969`), green, 13:20:22–13:21:32 UTC |
+| Brings | theme #2 (sticky sidebar) and #3 (font) |
+
+Checked on htwoo.io after it (`font-live.cjs`, `nav-sticky.cjs`, `font-shift.cjs live`, log
+`<baseline>/logs/launch-font-nav.log`):
+
+- Font drawn (CDP `getPlatformFontsForNode`) for the body text and h1: Gotham SSm, in light and dark, at 390 and
+  1280 px, on home, getting-started and the SPFx how-to; computed first family "Gotham SSm A".
+- Layout shift during load (CLS, PerformanceObserver): home 0; 1280 px 0.0009 to 0.0021; 390 px: how-to 0.0081
+  (the same with the web font blocked, 0.0082: not the font), getting-started **0.0364** (0.0063 with the web font
+  blocked): the font swap at about 260 ms rewraps the uppercase headings ("NPM INSTALL" 192 → 212 px) and moves
+  the blocks below by 20 to 50 px. All under 0.1 ("good"), but visible on that page at phone width; F-52.
+- Sidebar: 8 of 8.
+
+Not yet recorded under Acceptance 9 (brief, Part 1 step 4.7): the first upstream push changing htwoo-core, the first
+changing htwoo-react, and the first touching none of the filtered paths.
+
+### L.7 After the launch
+
+- n8design/htwoo#190 (open, not merged): the deploy writes the IndexNow key file
+  `/cxm2gk8e3xhmfeev4x2pvwcq1wxtcmd2.txt`. Stefan's merge.
+- Post-launch repo audit (read-only): proposals n8design/htwoo#191 and n8design/htwoo-theme#4, open, not merged.
+- The 18 open `[SUBJECT-DEBT]` findings go to htwoo-core as issues after the two weeks of watching.
+
 ## Appendix: baseline URL lists (Node 20 build at the base SHAs)
 
 Every live 200 URL is in this build (0.3). Route lists below; `/htwoo-core/`, `/htwoo-react/` and the

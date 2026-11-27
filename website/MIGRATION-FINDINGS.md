@@ -18,19 +18,20 @@ Status at the end of the rehearsal (Phase 5, 2026-11-27): htwoo `pd-migration` a
   which Phase 2's check didn't count. They don't reach the deployment: `docs/htwoo-components/` isn't mounted (the
   `/htwoo-components/` route publishes `website/frozen/htwoo-components/`, three JS files), the deploy workflow
   doesn't run `docs:components`, and the three paths under `/htwoo-components/layouts/` are 404 on the fork.
-- Acceptance 9: green, three triggers by configuration only (replay 4.16); their first real runs are recorded
-  after the merge (brief, Part 1 step 4.7).
+- Acceptance 9: green, three triggers by configuration only (replay 4.16); the first real pin bump after the
+  launch is recorded (replay L.6: n8design/htwoo#189, run 46006244176, green); the first upstream pushes changing
+  htwoo-core, htwoo-react and none of the filtered paths are recorded as they come.
 - Phase 6 (launch round, 2026-11-27, replay Phase 6): menu, code contrast, CDN links and the GA tag fixed; the
   fork is `noindex` and the htwoo.io build indexed; 208 of the 209 Search Console URLs answer 200 or redirect to
   the right page on the fork (the one left is a Pattern Lab deep link that fails on htwoo.io too, F-51); launch
   checklist, order, rollback and smoke test in the brief, Part 1 step 4.
 
-51 findings:
+52 findings:
 
 | Tag | Fixed | Workaround | Won't fix | Decided | Open |
 |---|---|---|---|---|---|
 | `[PD-GAP]` (17) | 5: F-01, F-03, F-32, F-36, F-37 | 6: F-04, F-07, F-27, F-33, F-48, F-49 | 4: F-05, F-06, F-08, F-34 | | 2: F-02, F-26 |
-| `[SUBJECT-DEBT]` (28) | 9: F-15, F-20, F-28, F-29, F-35, F-44, F-45, F-46, F-50 | | | 1: F-30 | 18: F-09 to F-14, F-16 (in part) to F-19, F-21, F-22, F-31, F-38, F-40, F-41, F-43, F-51 |
+| `[SUBJECT-DEBT]` (29) | 10: F-15, F-20, F-28, F-29, F-35, F-44, F-45, F-46, F-50, F-52 | | | 1: F-30 | 18: F-09 to F-14, F-16 (in part) to F-19, F-21, F-22, F-31, F-38, F-40, F-41, F-43, F-51 |
 | `[FORK-ONLY]` (6) | 1: F-47 | | 1: F-23 (expected) | 1: F-25 | 3: F-24, F-39, F-42 |
 
 - `[PD-GAP]` open: PD's job, neither blocks the switch (each has its interim: changelog links to GitHub, the
@@ -87,7 +88,7 @@ Status at the end of the rehearsal (Phase 5, 2026-11-27): htwoo `pd-migration` a
 | F-41 | [SUBJECT-DEBT] | htwoo | The modal dialog iframe pattern loads its page from the host's root: 404 | open |
 | F-42 | [FORK-ONLY] | htwoo | On the fork the frozen `/components/` pages load and link htwoo.io's files (`<base href>`) | open; correct after the switch |
 | F-43 | [SUBJECT-DEBT] | htwoo | Pattern Lab's theme switch fetches its theme file from outside `/htwoo-core/`: 404 | open |
-| F-44 | [SUBJECT-DEBT] | theme | The menu is its own scroll area and every entry is sticky | fixed in theme `13bc786`, verified |
+| F-44 | [SUBJECT-DEBT] | theme | The menu is its own scroll area and every entry is sticky | fixed: sticky sidebar, menu scrolls on its own (theme #2, `4993f8c`), live; first fix `13bc786` replaced |
 | F-45 | [SUBJECT-DEBT] | theme | Code colours fail 4.5:1 (comment 3.03:1, pink 3.93:1) | fixed in theme `a013637`, verified |
 | F-46 | [SUBJECT-DEBT] | htwoo | The CDN instructions link unpkg's file viewer, and a script tag ends in a folder | fixed (`2dc7e4407`; `@2` since `255cffd7a`) |
 | F-47 | [FORK-ONLY] | htwoo | The fork's deploy competes with htwoo.io in search | fixed: `site.index` only for `https://htwoo.io/` (`dd42a4dc6`) |
@@ -95,6 +96,7 @@ Status at the end of the rehearsal (Phase 5, 2026-11-27): htwoo `pd-migration` a
 | F-49 | [PD-GAP] | htwoo | `redirectFrom` takes only routes ending in `/` | workaround: redirect pages in a mount (`2dbc7af76`) |
 | F-50 | [SUBJECT-DEBT] | htwoo | Pages without a description, and repeated titles and descriptions | fixed for the website's pages (`a5942cded`); the guidelines pages and listing `noindex` (`4c08c6ebf`, `1e8c56775`); frozen pages as built |
 | F-51 | [SUBJECT-DEBT] | htwoo | Old style guide deep links land on the tools' "not found" (`?p=atoms-grid-grid`, Storybook `--page`) | open |
+| F-52 | [SUBJECT-DEBT] | theme | The brand font never applied: the theme asked for "Gotham A/B", htwoo.io's font project serves "Gotham SSm A/B" | fixed (theme #3, `6daa6e9`), live; small font-swap shift on one page at phone width |
 
 ## Upstream fixes (hTWOo, outside this migration)
 
@@ -1014,7 +1016,20 @@ them, and each needs its own fix in n8design/htwoo.
 
 ### F-44 [SUBJECT-DEBT] The menu is its own scroll area and every entry is sticky
 
-- Status: fixed in theme `13bc786` (Phase 6), verified on the fork
+- Status: fixed in theme `4993f8c` (n8design/htwoo-theme#2, merge `1287e2b6d`), live on htwoo.io with htwoo
+  `2fb029969` (pin bump #189), verified. The first fix (`13bc786`, below) is replaced.
+- Corrected 2026-11-27 (Stefan): the sidebar must stay sticky, as on the Hugo site; making the menu scroll with the
+  page was the wrong call. Now: `.header-main` `position: sticky; top: 0`, `height: 100vh` then `100dvh`; the menu
+  in it (`.header-nav`) is its own scroll area, `overflow-y: auto`, `overscroll-behavior: contain`; no
+  `position: sticky` on any menu item (the original bug). Narrow screens: the bar stays at the top, the open menu
+  scrolls on its own below it (`max-height` of the rest of the viewport, `overscroll-behavior: contain`); opening it
+  no longer scrolls the page. Sizes in rem (borders, shadows, blur); the invalid `filter: background-blur()` removed;
+  media-query breakpoints stay in px, as in the rest of the theme.
+  Check `<baseline>/scripts/nav-sticky.cjs` (long page, 390 and 1280 px, text 100 and 200 %, light and dark): the
+  sidebar stays at the top while the page scrolls; the last item can be scrolled into view; no overlaps at the top,
+  middle and end of the menu's scroll; wheeling past the menu's end or start doesn't move the page (0 px); body not
+  locked. 8 of 8 locally and on htwoo.io (`<baseline>/logs/launch-font-nav.log`).
+- First fix (Phase 6, replaced): theme `13bc786`, verified on the fork
 - Phase: 6
 - Repo and commit: theme `ab89060`; fixed in `13bc786`, live with htwoo `635e69830`
 - Where: `src/styles/partials/header.scss` (`.header-main`: sticky, `height: 100vh`), `src/styles/partials/nav.scss`
@@ -1198,4 +1213,30 @@ them, and each needs its own fix in n8design/htwoo.
 - Proposed fix: in hTWOo: Pattern Lab and Storybook resolve the query in the browser, so a static host can't
   redirect it. Pattern Lab: accept a pattern's file name as `?p=`; Storybook: map the old `--page` ids to `--docs`
   in `.storybook/manager` (a redirect on load).
+- Applies upstream: yes
+
+### F-52 [SUBJECT-DEBT] The brand font never applied
+
+- Status: fixed in theme `6daa6e9` (n8design/htwoo-theme#3, merge `a3766ba`), live on htwoo.io with htwoo
+  `2fb029969` (pin bump #189), verified; a small shift when the font swaps in remains on one page at phone width
+- Phase: launch
+- Repo and commit: theme `3e7a696` (and the Hugo theme before it); fixed in `6daa6e9`
+- Where: `src/styles/document/document.scss` (`body { font-family: "Gotham A", "Gotham B", sans-serif }`), against
+  the font project 889032 (`partials/head`, `site-root/889032/`)
+- Reproduce: on htwoo.io before the fix, `document.fonts` lists "Gotham SSm A/B" and "Chronicle SSm" only, none
+  loaded; the body asks for "Gotham A". The Hugo stylesheet (`website/frozen/assets/css/main.*.css`) asked for the
+  same names, so the brand font never applied on the Hugo site either.
+- Fix: as n8d.at's style guide does it: one token `--font-prim` (`_design-token.scss`): "Gotham SSm A", "Gotham SSm B",
+  then metric-matched fallback faces (`_fonts.scss`, `@font-face` on local fonts: "Gotham Fallback" on Arial, Arial
+  Bold, Arial Black; "Gotham Fallback Bold" on Arial Bold for systems without Arial Black; "Gotham Fallback Roboto"
+  for systems without Arial), then the system stack; the body, the only place naming Gotham, uses it. The fallback
+  metrics are measured for Gotham SSm, which runs wider than Gotham (n8d.at's values don't fit):
+  `<baseline>/scripts/font-measure.cjs`, log `<baseline>/logs/font-measure.log`; values in the PR and `_fonts.scss`.
+- After: htwoo.io draws Gotham SSm (CDP) for body text and headings, light and dark, 390 and 1280 px. Web font
+  blocked against loaded: text moves at most 77.7 px over a whole page with the fallbacks, up to 409 px without
+  (`font-shift.cjs`). CLS as served: 0 to 0.0081, except `/getting-started/` at 390 px: 0.0364 (0.0063 with the web
+  font blocked), the swap at about 260 ms rewrapping uppercase headings by one line.
+- Proposed fix for the rest: re-measure the 800–900 fallback faces on uppercase heading text (headings are set in
+  capitals at those weights; the values are measured on mixed-case article text), and check whether the swap can
+  happen before first paint.
 - Applies upstream: yes
