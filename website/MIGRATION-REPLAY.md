@@ -806,6 +806,14 @@ CSS, then the rendered DOM after a hard refresh.
   shallow clone because it reads each page's dates from git (`the repository is a shallow clone, so
   page.created would be wrong …; in CI, check out with fetch-depth: 0`, 34 pages listed, nothing written).
   The local builds used full clones, so they didn't show it. Fix: `fetch-depth: 0`.
+- Checked against PD `v0.10.1` (`git grep fetch-depth v0.10.1` in the PD repo), not a `[PD-GAP]`:
+  - the message names the fix: `packages/dev-server/src/storefront/git-dates.ts` line 167 appends "build from
+    the full history (in CI, check out with fetch-depth: 0)" to each page's problem, as run 1's log shows;
+  - PD's starter workflows set it: `packages/cli/templates/site/.github/workflows/pages.yml` line 28 and
+    `templates/storefront/.github/workflows/pages.yml` line 29, `fetch-depth: 0` with the comment "pd build
+    refuses a shallow clone then";
+  - the guide says it: `docs/guide/storefront.md` lines 606–608 (Dates, "A shallow clone") and 1424.
+  The deploy workflow here was written by hand from `hugo.yml`, not from PD's starter, so it missed the line.
 - Placed right after `b2fcf758e`; the two commits after it, not pushed yet, were replayed on top (bump
   `222e95d29` → `4a7fff2e3`, logs). No force-push.
 
@@ -833,9 +841,30 @@ tip, so the push started no run there (`gh run list -R StfBauer/htwoo-theme`: no
   `gh api repos/StfBauer/htwoo/deployments?environment=github-pages` lists `bc745f3fc` 07:44:01 (run 6) newest,
   then 07:42:29 (run 4), `4a7fff2e3` 07:40:16 (run 3), `fb072ed90` 07:37:44 (run 2). A manual run redeploys
   (run 6).
-- **Acceptance 9:** green for a `website/` change, a workflow change, the pin bump, two triggers close together
-  and the manual run. Not run yet: a push changing htwoo-core, one changing htwoo-react (both read-only in this
-  step) and a push touching none of the filtered paths (every change of this step is in a filtered path).
+- **Acceptance 9:** green. By real runs: a `website/` change, a workflow change, the pin bump, two triggers
+  close together and the manual run. Verified by configuration (decided 2026-11-27, Stefan: no commits in
+  htwoo-core or htwoo-react, which are read-only in this step), from `.github/workflows/deploy.yml` at
+  `eeb672a54`:
+
+  ```yaml
+  on:
+    push:
+      branches: [pd-migration]
+      paths:
+        - "website/**"
+        - "htwoo-core/**"
+        - "htwoo-react/**"
+        - "package.json"
+        - "package-lock.json"
+        - ".gitmodules"
+        - ".github/workflows/deploy.yml"
+  ```
+
+  - a push changing htwoo-core deploys: `- "htwoo-core/**"`;
+  - a push changing htwoo-react deploys: `- "htwoo-react/**"`;
+  - a push touching none of the filtered paths doesn't deploy: `push` lists `paths`, so GitHub starts the
+    workflow only when a changed file matches one of the seven lines above (for example, a change only in
+    `docs/project.json` or `README.md` matches none).
 - **Acceptance 10** on `https://stfbauer.github.io/htwoo/`, after run 6:
   - `curl` (`<baseline>/scripts/phase4-served.sh`, cache-busting query and `Cache-Control: no-cache`, log
     `<baseline>/logs/phase4-served.log`): the 389 live baseline URLs under `/htwoo/`: 370 200, 19 404, each with
