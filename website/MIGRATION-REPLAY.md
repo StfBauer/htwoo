@@ -820,13 +820,35 @@ tip, so the push started no run there (`gh run list -R StfBauer/htwoo-theme`: no
 | 1 | push, `website/` and the workflow changed (`c92a50165..b2fcf758e`) | `b2fcf758e` | https://github.com/StfBauer/htwoo/actions/runs/45959389297 | failure at "Build the website" (shallow clone, 4.15); deploy skipped |
 | 2 | push, the workflow changed | `fb072ed90` | https://github.com/StfBauer/htwoo/actions/runs/45959595334 | success: build 07:36–07:37, deploy 07:38 UTC |
 | 3 | push, the theme pin bump (`website/theme`) | `4a7fff2e3` | https://github.com/StfBauer/htwoo/actions/runs/45959887354 | success, one run for the commit; checkout shows `website/theme` at `ab89060` |
+| 4 | push, `website/` (the logs, `bc745f3fc`) | `bc745f3fc` | https://github.com/StfBauer/htwoo/actions/runs/45960167273 | success: build 07:41:12–07:42:29, deploy 07:42:34–07:42:45 UTC |
+| 5 | manual, 7 s after push 4 | `bc745f3fc` | https://github.com/StfBauer/htwoo/actions/runs/45960179274 | cancelled while waiting: replaced by run 6 |
+| 6 | manual, 4 s after run 5 | `bc745f3fc` | https://github.com/StfBauer/htwoo/actions/runs/45960190361 | success: build 07:42:48 (after run 4's deploy) – 07:44:00, deploy 07:44:04–07:44:14 UTC |
 
 - Run 2's log: `site: 34 pages → 70 files (served from /htwoo/)`, `accessibility: 35 pages, no errors`,
   `mounts: 2134 files (69.5 MB)`, the `robots.txt` note (F-24), as the local build (4.10). Then
   `/`, `/components/`, `/htwoo-core/`, `/htwoo-react/`, `/sitemap.xml` on `https://stfbauer.github.io/htwoo/`:
   200 each (cache-busting query, `Cache-Control: no-cache`).
-- Acceptance 9 so far: a `website/` change (runs 1 and 2, run 1 failed on the shallow clone) and the pin bump
-  (run 3) deploy.
+- Runs 4 to 6, two triggers close together: one at a time in group `pages`, in order; run 5, waiting behind
+  run 4, was replaced by run 6, and run 6 built only after run 4 had deployed. The last trigger wins:
+  `gh api repos/StfBauer/htwoo/deployments?environment=github-pages` lists `bc745f3fc` 07:44:01 (run 6) newest,
+  then 07:42:29 (run 4), `4a7fff2e3` 07:40:16 (run 3), `fb072ed90` 07:37:44 (run 2). A manual run redeploys
+  (run 6).
+- **Acceptance 9:** green for a `website/` change, a workflow change, the pin bump, two triggers close together
+  and the manual run. Not run yet: a push changing htwoo-core, one changing htwoo-react (both read-only in this
+  step) and a push touching none of the filtered paths (every change of this step is in a filtered path).
+- **Acceptance 10** on `https://stfbauer.github.io/htwoo/`, after run 6:
+  - `curl` (`<baseline>/scripts/phase4-served.sh`, cache-busting query and `Cache-Control: no-cache`, log
+    `<baseline>/logs/phase4-served.log`): the 389 live baseline URLs under `/htwoo/`: 370 200, 19 404, each with
+    a finding: F-02 3, F-05 2, F-06 6, F-34 7, `/robots.txt` (F-24, under a base path). Served
+    `/htwoo-core/css/htwoo.min.css` sha256 `39735ed46e44764e332cef932d4718616f3f17a025c6c2efe3f6e4c954737a3f`,
+    as deployed today (F-13).
+  - Rendered DOM (`<baseline>/scripts/phase4-dom.cjs`, headless Chromium, cache disabled = hard refresh, the
+    typography.com request blocked (F-23: it never answers for the fork's host and blocks rendering), log
+    `<baseline>/logs/phase4-dom.log`, screenshots `<baseline>/phase4/served/`): home, content page, listing,
+    supporters, 404 (status 404, "Page not found"), `/components/`, `/htwoo-core/`, `/htwoo-react/` render
+    with their stylesheets applied. Errors on the fork's own host: none, except the 404 page itself and
+    Pattern Lab's root-absolute `/ice-hotreloader/…` (F-38) and `/js/themeswitch/themes/blue.theme.json`
+    (F-43); both 404 on htwoo.io today too.
 
 ## Appendix: baseline URL lists (Node 20 build at the base SHAs)
 

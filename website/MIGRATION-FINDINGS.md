@@ -53,6 +53,7 @@ the rehearsal setup.
 | F-40 | [SUBJECT-DEBT] | htwoo | htwoo-core's `docs:components` still writes Hugo content and layouts that nothing builds | open: htwoo-core step |
 | F-41 | [SUBJECT-DEBT] | htwoo | The modal dialog iframe pattern loads its page from the host's root: 404 | open |
 | F-42 | [FORK-ONLY] | htwoo | On the fork the frozen `/components/` pages load and link htwoo.io's files (`<base href>`) | open; correct after the switch |
+| F-43 | [SUBJECT-DEBT] | htwoo | Pattern Lab's theme switch fetches its theme file from outside `/htwoo-core/`: 404 | open |
 
 ## Upstream fixes (hTWOo, outside this migration)
 
@@ -917,3 +918,19 @@ them, and each needs its own fix in n8design/htwoo.
 - Cause: the frozen pages aren't rewritten (decided 2026-11-26).
 - Proposed fix: fork-only
 - Applies upstream: no (fork-only)
+
+### F-43 [SUBJECT-DEBT] Pattern Lab's theme switch fetches its theme file from outside `/htwoo-core/`
+
+- Status: open (htwoo-core is read-only in this step)
+- Phase: 4
+- Repo and commit: htwoo `bc745f3fc` (htwoo-core unchanged since `2297b8114`)
+- Where: `htwoo-core/src/__js/themeswitch/index.js` line 108 and `src/plugins/plugin-design/js/plugin-design.js`
+  line 24: `fetch(`../../js/themeswitch/themes/${…}.theme.json`)`, relative to the page
+- Reproduce: open `/htwoo-core/` with the network log open; or
+  `curl -s -o /dev/null -w '%{http_code}' https://htwoo.io/js/themeswitch/themes/blue.theme.json` (404) against
+  `…/htwoo-core/js/themeswitch/themes/blue.theme.json` (200).
+- Expected: the style guide's index loads `/htwoo-core/js/themeswitch/themes/blue.theme.json`.
+- Actual: from `/htwoo-core/` the path leaves the style guide and asks for `/js/themeswitch/…`: 404 on
+  htwoo.io today, `/htwoo/js/…` on the fork (also 404); pattern pages two levels deep resolve it correctly.
+- Proposed fix: in hTWOo: resolve the path against the style guide's root, not the page.
+- Applies upstream: yes
