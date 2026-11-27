@@ -717,25 +717,18 @@ Design:
 
 ### 4.7 Waiting for the first deploy run
 
-Steps 2 and 3 are done (4.8 to 4.10). Left, in this order:
+Steps 1 to 3 of the original list are done or decided: PD 0.10.1 and the full build (4.8 to 4.10), the 404-page
+recheck (4.10), F-25 (decided 2026-11-27, 4.12). Acceptance 9 after that decision, the runs in 4.15:
 
-1. F-25 on GitHub: `pd-migration` in `StfBauer/htwoo`'s `github-pages` environment; `HTWOO_DISPATCH_TOKEN` in
-   `StfBauer/htwoo-theme` with Actions: read and write on `StfBauer/htwoo`. Recheck with the two `gh api`
-   calls in F-25.
-2. PD 0.10.1 in `website/` and the theme (bump commits), the full `pd build` without the stand-ins
-   (Acceptance 8, output part). Then F-01 and F-03 close as "fixed in PD 0.10.0, completed by 0.10.1
-   (F-37)", and F-36 and F-37 close.
-3. The five 404-page warnings from 3.1, rechecked in `pd dev`: a new `[PD-GAP]` if any still warns about a
-   link to a mounted part.
-4. Push `pd-migration` first: the first deploy run. Push `pd` second: its notify run needs the deploy
-   workflow on the fork. Then Acceptance 9 run by run, run URLs here:
-   - push changing `website/`: …; htwoo-core: …; htwoo-react: …
-   - push touching none of the paths (for example `docs/project.json`): no run
-   - push to `pd`: notify run …, deploy run … with one bump commit
-   - two triggers close together: …
-   - manual run: …
-5. Acceptance 10 on `https://stfbauer.github.io/htwoo/`: cache-bypassing `curl` for status codes and served
-   CSS, then the rendered DOM after a hard refresh.
+- push changing `website/` deploys; the same for htwoo-core and htwoo-react;
+- push touching none of the filtered paths doesn't deploy;
+- a theme pin bump in htwoo (`chore(deps): Bump htwoo-theme to <sha>`) deploys, exactly once (it replaces the
+  dispatch run);
+- two triggers close together deploy in order, the last one wins;
+- manual run redeploys.
+
+Then Acceptance 10 on `https://stfbauer.github.io/htwoo/`: cache-bypassing `curl` for status codes and served
+CSS, then the rendered DOM after a hard refresh.
 
 ### 4.8 `ead30d2` chore(deps): Pin pattern-dump to 0.10.1 (htwoo-theme)
 
@@ -782,6 +775,58 @@ Steps 2 and 3 are done (4.8 to 4.10). Left, in this order:
 
 - `docs(website): Log the PD 0.10.1 full build`: 4.8 to 4.11; findings F-01, F-03, F-36, F-37 closed, F-25
   rechecked (21:47 UTC: environment `main` only, theme 0 secrets), new F-41, F-42.
+
+### 4.12 Decision on F-25 (Stefan, 2026-11-27)
+
+- No cross-repo dispatch for now, so no `HTWOO_DISPATCH_TOKEN`. A theme change goes live when the theme pin is
+  bumped by hand in htwoo; the bump commit changes `website/theme`, so the paths filter deploys it. The notify
+  workflow goes from the theme; the bump step and its inputs go from the deploy workflow; the paths filter and
+  the manual run stay. Acceptance 9: a pin-bump run instead of the dispatch run (4.7). Stefan adds
+  `pd-migration` to the fork's `github-pages` environment.
+- The subject keeps F-35's format, `chore(deps): Bump htwoo-theme to <sha>` (capital B, for commitlint's
+  sentence-case rule).
+
+### 4.13 `b2fcf758e` ci(website): Deploy theme changes through the pin bump only (htwoo)
+
+- `deploy.yml`: `workflow_dispatch` without inputs; the "Bump the theme" step removed; `build` gets
+  `contents: read` (was `write`) and `pages: read`. The paths filter and the fork's branch line (4.3) unchanged.
+- Check: parsed with `yaml`: triggers `push`, `workflow_dispatch` (no inputs); `build` steps checkout,
+  configure-pages, setup-node, the five build steps, upload-pages-artifact. commitlint 0.
+
+### 4.14 `ab89060` ci: Remove the workflow that notifies htwoo of theme changes (htwoo-theme), `4a7fff2e3` chore(deps): Bump htwoo-theme to ab89060 (htwoo)
+
+- Theme: `.github/workflows/notify-htwoo.yml` removed; the theme has no workflow left. With 4.4 and 4.5 it nets to
+  nothing (F-39).
+- htwoo: the pin `ead30d2` → `ab89060`, bumped by hand, as theme changes go live from now on. The theme's files
+  outside `.github/` are the same as at `ead30d2`, so the full build of 4.10 holds. commitlint 0 for both.
+
+### 4.15 `fb072ed90` ci(website): Check out the full history for the page dates (htwoo)
+
+- Found by the first deploy run (below): `actions/checkout` clones shallow by default, and `pd build` refuses a
+  shallow clone because it reads each page's dates from git (`the repository is a shallow clone, so
+  page.created would be wrong …; in CI, check out with fetch-depth: 0`, 34 pages listed, nothing written).
+  The local builds used full clones, so they didn't show it. Fix: `fetch-depth: 0`.
+- Placed right after `b2fcf758e`; the two commits after it, not pushed yet, were replayed on top (bump
+  `222e95d29` → `4a7fff2e3`, logs). No force-push.
+
+### 4.16 Deploy runs (htwoo `pd-migration`; Acceptance 9)
+
+Pushes one commit range at a time, so each run has one trigger. The theme's `pd` was pushed first (2026-11-27
+07:33 UTC, `bfe8a38..ab89060` plus `ead30d2`), so the pins resolve on GitHub; the theme has no workflow at its
+tip, so the push started no run there (`gh run list -R StfBauer/htwoo-theme`: none).
+
+| # | Trigger | Commit | Run | Result |
+|---|---|---|---|---|
+| 1 | push, `website/` and the workflow changed (`c92a50165..b2fcf758e`) | `b2fcf758e` | https://github.com/StfBauer/htwoo/actions/runs/45959389297 | failure at "Build the website" (shallow clone, 4.15); deploy skipped |
+| 2 | push, the workflow changed | `fb072ed90` | https://github.com/StfBauer/htwoo/actions/runs/45959595334 | success: build 07:36–07:37, deploy 07:38 UTC |
+| 3 | push, the theme pin bump (`website/theme`) | `4a7fff2e3` | https://github.com/StfBauer/htwoo/actions/runs/45959887354 | success, one run for the commit; checkout shows `website/theme` at `ab89060` |
+
+- Run 2's log: `site: 34 pages → 70 files (served from /htwoo/)`, `accessibility: 35 pages, no errors`,
+  `mounts: 2134 files (69.5 MB)`, the `robots.txt` note (F-24), as the local build (4.10). Then
+  `/`, `/components/`, `/htwoo-core/`, `/htwoo-react/`, `/sitemap.xml` on `https://stfbauer.github.io/htwoo/`:
+  200 each (cache-busting query, `Cache-Control: no-cache`).
+- Acceptance 9 so far: a `website/` change (runs 1 and 2, run 1 failed on the shallow clone) and the pin bump
+  (run 3) deploy.
 
 ## Appendix: baseline URL lists (Node 20 build at the base SHAs)
 

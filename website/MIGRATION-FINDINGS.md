@@ -35,7 +35,7 @@ the rehearsal setup.
 | F-22 | [SUBJECT-DEBT] | htwoo | Front matter that Hugo ignored or that PD will refuse | open |
 | F-23 | [FORK-ONLY] | htwoo | typography.com refuses the fork's host: brand fonts don't load on `stfbauer.github.io` | open; parity checked locally (decision) |
 | F-24 | [FORK-ONLY] | htwoo | Under the `/htwoo/` base path PD writes no `robots.txt` | open |
-| F-25 | [FORK-ONLY] | htwoo, theme | Fork setup gaps: Pages environment allows `main` only; `HTWOO_DISPATCH_TOKEN` missing | open: not visible on GitHub at 21:47 UTC either; blocks the first deploy run |
+| F-25 | [FORK-ONLY] | htwoo, theme | Fork setup gaps: Pages environment allows `main` only; `HTWOO_DISPATCH_TOKEN` missing | decided 2026-11-27: no dispatch, so no token; `pd-migration` in the Pages environment (Stefan) |
 | F-26 | [PD-GAP] | htwoo, theme | A navigation entry can't be a page with children, nor list a folder's pages | open; menu by hand in `site.globals` |
 | F-27 | [PD-GAP] | theme | `{{pd-image}}` takes no `class` | workaround (`PD-WORKAROUND: F-27`) |
 | F-28 | [SUBJECT-DEBT] | theme | swup page transitions assume one stylesheet for every page | fixed in theme, verified (Phase 2) |
@@ -49,7 +49,7 @@ the rehearsal setup.
 | F-36 | [PD-GAP] | htwoo | `pd build` requires `site.workbenchUrl` with `build.workbench: false`, and refuses a mount at it | fixed in PD 0.10.1 |
 | F-37 | [PD-GAP] | htwoo | A mount can't publish a file under `/assets/`, even with no site file at that path | fixed in PD 0.10.1 |
 | F-38 | [SUBJECT-DEBT] | htwoo | Pattern Lab's pages load the dev script `/ice-hotreloader/dist/browser.min.js` in production | open |
-| F-39 | [FORK-ONLY] | htwoo, theme | The deploy and notify workflows run on the fork's branches (`pd-migration`, `pd`) | open: drop both `chore(fork)` commits before the PRs |
+| F-39 | [FORK-ONLY] | htwoo, theme | The deploy workflow runs on the fork's branch (`pd-migration`) | open: drop the `chore(fork)` commits before the PRs |
 | F-40 | [SUBJECT-DEBT] | htwoo | htwoo-core's `docs:components` still writes Hugo content and layouts that nothing builds | open: htwoo-core step |
 | F-41 | [SUBJECT-DEBT] | htwoo | The modal dialog iframe pattern loads its page from the host's root: 404 | open |
 | F-42 | [FORK-ONLY] | htwoo | On the fork the frozen `/components/` pages load and link htwoo.io's files (`<base href>`) | open; correct after the switch |
@@ -545,9 +545,12 @@ them, and each needs its own fix in n8design/htwoo.
 
 ### F-25 [FORK-ONLY] Fork setup gaps
 
-- Status: open. Reported done 2026-11-26 (`pd-migration` added to the `github-pages` environment,
-  `HTWOO_DISPATCH_TOKEN` set in the theme fork), but neither shows on GitHub at 15:33 UTC or 21:47 UTC (recheck below).
-  Needed before the first deploy run, not before the Phase 4 commits.
+- Status: decided 2026-11-27 (Stefan): no cross-repo dispatch for now, so no `HTWOO_DISPATCH_TOKEN`. A theme
+  change goes live when the theme pin is bumped by hand in htwoo (`chore(deps): Bump htwoo-theme to <sha>`, the
+  format from F-35); that commit changes `website/theme`, so the paths filter deploys it. The notify workflow
+  (theme `2ed2703`, `bfe8a38`) is removed in theme `ab89060`, the bump step and its inputs in htwoo `b2fcf758e`;
+  the paths filter and the manual run stay. Acceptance 9: a pin-bump run instead of the dispatch run.
+  `pd-migration` goes into the fork's `github-pages` environment (Stefan, 2026-11-27).
 - Phase: 0
 - Reproduce:
   - `gh api repos/StfBauer/htwoo/environments/github-pages/deployment-branch-policies` → `main` only
@@ -846,9 +849,11 @@ them, and each needs its own fix in n8design/htwoo.
   `pl:publish-docs`. Not touched in this step (htwoo-core is read-only).
 - Applies upstream: yes
 
-### F-39 [FORK-ONLY] The deploy and notify workflows run on the fork's branches
+### F-39 [FORK-ONLY] The deploy workflow runs on the fork's branch
 
-- Status: open (both `chore(fork)` commits are dropped before the upstream PRs, Part 1 step 2)
+- Status: open (`chore(fork)` commits dropped before the upstream PRs, Part 1 step 2). Since F-25's decision
+  (2026-11-27) only htwoo's is still in effect; the theme's add, fork and remove commits (`2ed2703`, `bfe8a38`,
+  `ab89060`) cancel out and can be dropped together.
 - Phase: 4
 - Repo and commit: htwoo `ee6860fb0` (on `1f646d6b7`), theme `bfe8a38` (on `2ed2703`)
 - Where: htwoo `.github/workflows/deploy.yml` (`on.push.branches`); theme `.github/workflows/notify-htwoo.yml`
