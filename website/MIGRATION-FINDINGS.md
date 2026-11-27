@@ -9,6 +9,24 @@ the rehearsal setup.
 
 ## Summary
 
+Status at the end of the rehearsal (Phase 5, 2026-11-27): htwoo `pd-migration` and htwoo-theme `pd` deploy
+`https://stfbauer.github.io/htwoo/` with Pattern Dump 0.10.1. Acceptance 1 to 10 green, with two qualifiers:
+2 except htwoo-core's tracked output in `docs/htwoo-components/`, which still holds three Hugo layouts (F-40; Phase
+2's check didn't count it), and 9 partly by configuration (replay 4.16). 43 findings:
+
+| Tag | Fixed | Workaround | Won't fix | Decided | Open |
+|---|---|---|---|---|---|
+| `[PD-GAP]` (15) | 4: F-01, F-03, F-36, F-37 | 4: F-04, F-07, F-27, F-33 | 4: F-05, F-06, F-08, F-34 | | 3: F-02, F-26, F-32 |
+| `[SUBJECT-DEBT]` (23) | 4: F-20, F-28, F-29, F-35 | | | 1: F-30 | 18: F-09 to F-19 (F-16 in part), F-21, F-22, F-31, F-38, F-40, F-41, F-43 |
+| `[FORK-ONLY]` (5) | | | | 1: F-25 | 4: F-23, F-24, F-39, F-42 |
+
+- `[PD-GAP]` open: PD's job, none blocks the switch (each has its interim: changelog links to GitHub, the menu
+  by hand, images at their variant width).
+- `[SUBJECT-DEBT]` open: hTWOo's own, outside this migration; the four with a known cause are in "Upstream fixes"
+  below, F-40, F-41, F-43 go with the htwoo-core step.
+- `[FORK-ONLY]`: not replayed. Before the upstream PRs: drop the `chore(fork)` commits (F-39), point the submodule
+  at `n8design/htwoo-theme` `main` (Part 1, step 2).
+
 | ID | Tag | Repo | Title | Status |
 |---|---|---|---|---|
 | F-01 | [PD-GAP] | htwoo | Site config can't place another tool's build output at a site path | fixed in PD 0.10.0, completed by 0.10.1 (F-37) |
@@ -26,7 +44,7 @@ the rehearsal setup.
 | F-13 | [SUBJECT-DEBT] | htwoo | Deployed `/htwoo-core/css/` is the committed file; tracked build outputs are stale | open |
 | F-14 | [SUBJECT-DEBT] | htwoo | Storybook and Pattern Lab load files from other hosts, two of them 404 | open |
 | F-15 | [SUBJECT-DEBT] | htwoo | Google Analytics tag `G-40524BBS9G` returns 404: GA collects nothing | open |
-| F-16 | [SUBJECT-DEBT] | htwoo, theme | Broken or missing pages today: no 404 page, `/imprint` 404, links without trailing slash | open |
+| F-16 | [SUBJECT-DEBT] | htwoo, theme | Broken or missing pages today: no 404 page, `/imprint` 404, links without trailing slash | open in part: 404 page fixed (PD's `/404.html`); `/imprint` and slashless links open |
 | F-17 | [SUBJECT-DEBT] | htwoo | `components-sitemap.xml` leaves out 35 section pages | open |
 | F-18 | [SUBJECT-DEBT] | htwoo | Website changelog copies are stale and hold entries the package changelogs lack | open |
 | F-19 | [SUBJECT-DEBT] | htwoo | Changelog and release automation partly broken (record only) | open |
@@ -167,7 +185,8 @@ them, and each needs its own fix in n8design/htwoo.
 
 ### F-04 [PD-GAP] Raw HTML in page markdown is shown as text
 
-- Status: open
+- Status: workaround (decided 2026-11-25): the home's markup is in the theme (`ac96b3f`), the other pages'
+  HTML converted to markdown in Phase 2, text unchanged
 - Phase: 0
 - Repo and commit: htwoo docs `bc889ced5`, PD 0.9.0
 - Where: `content/_index.md` (home: 14 lines of HTML, the whole body is a `<div class="t-general landing">`),
@@ -213,7 +232,7 @@ them, and each needs its own fix in n8design/htwoo.
 
 ### F-06 [PD-GAP] No RSS feeds
 
-- Status: open
+- Status: won't fix (decided 2026-11-25): the feeds are dropped; the theme's `rss.html` is gone (`e934224`)
 - Phase: 0
 - Repo and commit: docs `bc889ced5`, Hugo 0.108.0 defaults
 - Where: 48 `index.xml` files: `/index.xml`, `/guidelines/`, `/how-to/`, `/changelog/`, `/case-studies/`,
@@ -229,7 +248,7 @@ them, and each needs its own fix in n8design/htwoo.
 
 ### F-07 [PD-GAP] Listing entries can't carry a page's own fields
 
-- Status: open
+- Status: workaround (decided 2026-11-25): the supporters in `site.globals.supporters`, not on their pages
 - Phase: 0
 - Repo and commit: theme `2a8010a`, docs `bc889ced5`, PD 0.9.0
 - Where: `layouts/supporters/list.html` and shortcode `sponsors.html` read `logo` and `link` of each page in
@@ -251,7 +270,7 @@ them, and each needs its own fix in n8design/htwoo.
 
 ### F-08 [PD-GAP] Head items with no equivalent
 
-- Status: open
+- Status: won't fix (decided 2026-11-25): `<base href>`, `meta keywords` and `nofollow` dropped (theme `66820b9`)
 - Phase: 0
 - Repo and commit: theme `2a8010a` `layouts/partials/head.html`, PD 0.9.0
 - Where: `<base href="{{ .Permalink }}">`, `<meta name="keywords">` from tags, `robots: "noindex, nofollow"` on
@@ -393,7 +412,9 @@ them, and each needs its own fix in n8design/htwoo.
 
 ### F-16 [SUBJECT-DEBT] Broken or missing pages today
 
-- Status: open
+- Status: open in part. The 404 page is fixed: PD writes `/404.html`, served on the fork with status 404 and
+  "Page not found" (Phase 4, `<baseline>/logs/phase4-dom.log`). Open: `/imprint` (Stefan decides), the links
+  without a trailing slash (a 301 on htwoo.io; `/htwoo-core` 302 in `pd dev`, Phase 3)
 - Phase: 0
 - Reproduce: `<baseline>/live/urls.tsv` (crawl 2026-11-25 11:14–11:18 UTC)
 - Actual:
@@ -450,8 +471,8 @@ them, and each needs its own fix in n8design/htwoo.
 
 ### F-20 [SUBJECT-DEBT] Unused or empty theme parts
 
-- Status: open. Question for Stefan: port them as patterns anyway (Acceptance 3 says "every former layout,
-  partial and shortcode") or drop?
+- Status: fixed in theme (decided 2026-11-25): unused layouts and partials dropped; Acceptance 3 covers the
+  parts in use
 - Phase: 0
 - Repo and commit: theme `2a8010a`
 - Where: `layouts/media/baseof.html` (renders "Hello world"), `layouts/media/list.html`,

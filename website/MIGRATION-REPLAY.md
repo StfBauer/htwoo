@@ -879,6 +879,28 @@ tip, so the push started no run there (`gh run list -R StfBauer/htwoo-theme`: no
     Pattern Lab's root-absolute `/ice-hotreloader/…` (F-38) and `/js/themeswitch/themes/blue.theme.json`
     (F-43); both 404 on htwoo.io today too.
 
+## Phase 5: report (htwoo)
+
+Started 2026-11-27, after the brief was brought in line with the pin-bump flow (Stefan; the brief is outside both
+repos: dated note at its top, trigger design, token setup and Part 1 step 5 removed, write scope, glossary, Phase 4
+line, Decisions line, Acceptance 9).
+
+### 5.1 Findings audit
+
+- `<baseline>/scripts/phase5-audit.py website/MIGRATION-FINDINGS.md`: every finding has a tag, Status, Phase,
+  Reproduce and Applies upstream; table and blocks agree on ID and tag; no table row without a block.
+- Statuses: six blocks still read "open" although decided or fixed since; set to what the block's own "Decided"
+  line says: F-04 workaround, F-06 won't fix, F-07 workaround, F-08 won't fix, F-20 fixed in theme, F-16 open in
+  part (the 404 page fixed by PD's `/404.html`, Phase 4; `/imprint` and slashless links open).
+- Acceptance 2 qualified: `docs/htwoo-components/layouts/` holds three tracked Hugo layouts (F-40), which Phase 2's
+  check (2.11) didn't count. They are htwoo-core's build output, read-only in this step.
+- A status overview by tag on top of the findings' summary table: 43 findings, 15 `[PD-GAP]` (3 open), 23
+  `[SUBJECT-DEBT]` (18 open), 5 `[FORK-ONLY]`.
+
+### 5.2 Logs (htwoo)
+
+- `docs(website): Write the phase 5 report`: this section, the findings' overview and the six statuses.
+
 ## Appendix: baseline URL lists (Node 20 build at the base SHAs)
 
 Every live 200 URL is in this build (0.3). Route lists below; `/htwoo-core/`, `/htwoo-react/` and the
