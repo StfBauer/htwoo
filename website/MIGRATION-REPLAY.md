@@ -1140,6 +1140,9 @@ over (step 8).
   blocks pushes to `docs`; 5.5 and step 8: lifted first when `docs` is retired after the two weeks (removing
   `hugo.yml` from `docs` is itself a push).
 - Log commit: `docs(website): Record the guidelines and CDN changes`.
+- `1e8c56775` docs(website): Keep the guidelines listing out of search: `/guidelines/` `noindex`, still published. Parity
+  audit: indexable 264 = sitemap 264, no guidelines URL in the sitemap or `llms.txt` (F-50). Log commit:
+  `docs(website): Record the guidelines listing on F-50`.
 
 The round ends here. No `pd-upstream` branch was cut and no PR opened.
 

@@ -93,7 +93,7 @@ Status at the end of the rehearsal (Phase 5, 2026-11-27): htwoo `pd-migration` a
 | F-47 | [FORK-ONLY] | htwoo | The fork's deploy competes with htwoo.io in search | fixed: `site.index` only for `https://htwoo.io/` (`dd42a4dc6`) |
 | F-48 | [PD-GAP] | htwoo | `redirectFrom` can't forward to an external URL | workaround: old changelog URLs to `/changelog/` (`28c7e15a3`) |
 | F-49 | [PD-GAP] | htwoo | `redirectFrom` takes only routes ending in `/` | workaround: redirect pages in a mount (`2dbc7af76`) |
-| F-50 | [SUBJECT-DEBT] | htwoo | Pages without a description, and repeated titles and descriptions | fixed for the website's pages (`a5942cded`); 12 template guidelines pages `noindex` (`4c08c6ebf`); frozen pages as built |
+| F-50 | [SUBJECT-DEBT] | htwoo | Pages without a description, and repeated titles and descriptions | fixed for the website's pages (`a5942cded`); the guidelines pages and listing `noindex` (`4c08c6ebf`, `1e8c56775`); frozen pages as built |
 | F-51 | [SUBJECT-DEBT] | htwoo | Old style guide deep links land on the tools' "not found" (`?p=atoms-grid-grid`, Storybook `--page`) | open |
 
 ## Upstream fixes (hTWOo, outside this migration)
@@ -1173,9 +1173,11 @@ them, and each needs its own fix in n8design/htwoo.
   each body is still the Pattern Lab starter's template text: `01-index` (overview), `02-principles`, `03-code`,
   `04-accessibility`, `05-data-display`, `06-data-entry`, `07-data-validation`, `08-input-modes`, `09-navigation`,
   `10-notifications`, `11-writing`, `12-browser-support` ("Guidelines go here", "For inspiration, check out …").
-  They stay published at their URLs (6 of them have impressions); out of the sitemap and `llms.txt`. The listing
-  `/guidelines/` stays indexed. Sitemap now 265 = the indexable pages (15 PD + 250 frozen), nothing missing or
-  extra.
+  They stay published at their URLs (6 of them have impressions); out of the sitemap and `llms.txt`.
+- Added 2026-11-27 (Stefan), htwoo `1e8c56775`: the listing `/guidelines/` is `noindex` too (it lists only those
+  twelve), still published, out of the sitemap and `llms.txt`. Parity audit (`phase6-seo.cjs`, build for htwoo.io,
+  `<baseline>/phase6/seo-after-guidelines.txt`): indexable 264 = sitemap 264 (14 PD + 250 frozen), nothing missing
+  or extra; no `/guidelines/` URL in the sitemap or `llms.txt`.
 - Applies upstream: yes
 
 ### F-51 [SUBJECT-DEBT] Old style guide deep links land on the tools' "not found"
