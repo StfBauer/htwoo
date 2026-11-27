@@ -921,6 +921,19 @@ line, Decisions line, Acceptance 9).
 - **Report:** the 18 open `[SUBJECT-DEBT]` findings go to htwoo-core as issues after the switch; not opened yet.
 - Log commit: `docs(website): Record the F-32 check and the upstream plan`.
 
+### 5.4 Merge decisions for the upstream PRs (Stefan, 2026-11-27)
+
+Recorded in the brief (outside both repos), Part 1 step 4 and Decisions:
+
+1. Both PRs merge with a merge commit, never squash or rebase. The theme PR needs it so the re-pointed pins exist
+   in upstream's history; the htwoo PR keeps its commits, one concern each, so every cherry-picked commit has to
+   build, which is why the pins are re-pointed.
+2. Merge order: the theme PR first, then the htwoo PR, whose pins are checked against the theme's merged history
+   before it's merged (each pinned SHA reachable from `n8design/htwoo-theme` `main`).
+
+The rehearsal ends here. Part 1 (cutting `pd-upstream`, the PRs) is Stefan's to start; no branch was cut and no PR
+opened. Log commit: `docs(website): Record the merge decisions for the upstream PRs`.
+
 ## Appendix: baseline URL lists (Node 20 build at the base SHAs)
 
 Every live 200 URL is in this build (0.3). Route lists below; `/htwoo-core/`, `/htwoo-react/` and the
