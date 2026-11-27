@@ -10,22 +10,33 @@ the rehearsal setup.
 ## Summary
 
 Status at the end of the rehearsal (Phase 5, 2026-11-27): htwoo `pd-migration` and htwoo-theme `pd` deploy
-`https://stfbauer.github.io/htwoo/` with Pattern Dump 0.10.1. Acceptance 1 to 10 green, with two qualifiers:
-2 except htwoo-core's tracked output in `docs/htwoo-components/`, which still holds three Hugo layouts (F-40; Phase
-2's check didn't count it), and 9 partly by configuration (replay 4.16). 43 findings:
+`https://stfbauer.github.io/htwoo/` with Pattern Dump 0.10.1.
+
+- Acceptance 1, 3 to 8 and 10: green.
+- Acceptance 2: green except F-40. htwoo-core's tracked output `docs/htwoo-components/` still holds three Hugo
+  layouts (`layouts/components/list.html`, `layouts/components/single.html`, `layouts/partials/component-styles.html`),
+  which Phase 2's check didn't count. They don't reach the deployment: `docs/htwoo-components/` isn't mounted (the
+  `/htwoo-components/` route publishes `website/frozen/htwoo-components/`, three JS files), the deploy workflow
+  doesn't run `docs:components`, and the three paths under `/htwoo-components/layouts/` are 404 on the fork.
+- Acceptance 9: green, three triggers by configuration only (replay 4.16); their first real runs are recorded
+  after the merge (brief, Part 1 step 4.7).
+
+43 findings:
 
 | Tag | Fixed | Workaround | Won't fix | Decided | Open |
 |---|---|---|---|---|---|
-| `[PD-GAP]` (15) | 4: F-01, F-03, F-36, F-37 | 4: F-04, F-07, F-27, F-33 | 4: F-05, F-06, F-08, F-34 | | 3: F-02, F-26, F-32 |
+| `[PD-GAP]` (15) | 5: F-01, F-03, F-32, F-36, F-37 | 4: F-04, F-07, F-27, F-33 | 4: F-05, F-06, F-08, F-34 | | 2: F-02, F-26 |
 | `[SUBJECT-DEBT]` (23) | 4: F-20, F-28, F-29, F-35 | | | 1: F-30 | 18: F-09 to F-19 (F-16 in part), F-21, F-22, F-31, F-38, F-40, F-41, F-43 |
 | `[FORK-ONLY]` (5) | | | | 1: F-25 | 4: F-23, F-24, F-39, F-42 |
 
-- `[PD-GAP]` open: PD's job, none blocks the switch (each has its interim: changelog links to GitHub, the menu
-  by hand, images at their variant width).
-- `[SUBJECT-DEBT]` open: hTWOo's own, outside this migration; the four with a known cause are in "Upstream fixes"
-  below, F-40, F-41, F-43 go with the htwoo-core step.
-- `[FORK-ONLY]`: not replayed. Before the upstream PRs: drop the `chore(fork)` commits (F-39), point the submodule
-  at `n8design/htwoo-theme` `main` (Part 1, step 2).
+- `[PD-GAP]` open: PD's job, neither blocks the switch (each has its interim: changelog links to GitHub, the
+  menu by hand).
+- `[SUBJECT-DEBT]` open: hTWOo's own, outside this migration. The 18 go to htwoo-core as issues after the switch
+  (not opened yet); the four with a known cause are in "Upstream fixes" below, F-40, F-41, F-43 go with the
+  htwoo-core step.
+- `[FORK-ONLY]`: not replayed. The fork branches stay as the record of the rehearsal; the upstream branches are
+  cut from upstream's tips with the rehearsal's commits cherry-picked, leaving out the `chore(fork)` commits
+  (F-39; brief, Part 1 step 4).
 
 | ID | Tag | Repo | Title | Status |
 |---|---|---|---|---|
@@ -60,14 +71,14 @@ Status at the end of the rehearsal (Phase 5, 2026-11-27): htwoo `pd-migration` a
 | F-29 | [SUBJECT-DEBT] | theme | Accessibility defects PD's build would refuse: unnamed logo and supporter links, nested `<main>` | fixed in theme |
 | F-30 | [SUBJECT-DEBT] | theme | Visual differences the skin introduces on purpose or by PD's markup | parity checked (Phase 2): list in the block; copy button styled |
 | F-31 | [SUBJECT-DEBT] | htwoo | about, why-htwoo, roadmap and flavor are `noindex`, probably unintended | open: Stefan decides later |
-| F-32 | [PD-GAP] | htwoo | An image between two variant widths shows at the smaller variant, not its own width | open |
+| F-32 | [PD-GAP] | htwoo | An image between two variant widths shows at the smaller variant, not its own width | fixed in PD 0.10.0 |
 | F-33 | [PD-GAP] | htwoo | An external image in markdown can't get a width and height: `pd build` stops on it | workaround: sized `badge` component in the theme |
 | F-34 | [PD-GAP] | htwoo | Content image and theme asset URLs change (`/images/…`, `/how-to/*.png`, `/js/main.js`, `/assets/css/main.*.css`) | won't fix: new URLs accepted |
 | F-35 | [SUBJECT-DEBT] | htwoo | The bump commit format `chore(deps): bump …` breaks commitlint's sentence-case subject rule | fixed: format `chore(deps): Bump …` |
 | F-36 | [PD-GAP] | htwoo | `pd build` requires `site.workbenchUrl` with `build.workbench: false`, and refuses a mount at it | fixed in PD 0.10.1 |
 | F-37 | [PD-GAP] | htwoo | A mount can't publish a file under `/assets/`, even with no site file at that path | fixed in PD 0.10.1 |
 | F-38 | [SUBJECT-DEBT] | htwoo | Pattern Lab's pages load the dev script `/ice-hotreloader/dist/browser.min.js` in production | open |
-| F-39 | [FORK-ONLY] | htwoo, theme | The deploy workflow runs on the fork's branch (`pd-migration`) | open: drop the `chore(fork)` commits before the PRs |
+| F-39 | [FORK-ONLY] | htwoo, theme | The deploy workflow runs on the fork's branch (`pd-migration`) | open: left out of the upstream cherry-picks; fork branches untouched |
 | F-40 | [SUBJECT-DEBT] | htwoo | htwoo-core's `docs:components` still writes Hugo content and layouts that nothing builds | open: htwoo-core step |
 | F-41 | [SUBJECT-DEBT] | htwoo | The modal dialog iframe pattern loads its page from the host's root: 404 | open |
 | F-42 | [FORK-ONLY] | htwoo | On the fork the frozen `/components/` pages load and link htwoo.io's files (`<base href>`) | open; correct after the switch |
@@ -729,7 +740,12 @@ them, and each needs its own fix in n8design/htwoo.
 
 ### F-32 [PD-GAP] An image between two variant widths shows at the smaller variant
 
-- Status: open
+- Status: fixed in PD 0.10.0 (CHANGELOG: "An image narrower than a slot's next width shows at its own width",
+  #123). Checked 2026-11-27 on the deployed site (PD 0.10.1, run 6 of replay 4.16), `/htwoo/how-to/how-to-spfx-html/`:
+  `how-to-spfx-html-theming-1.png` has `width="602"`, srcset `480w, 602w`, loads `….602.webp` (602×329, served 200),
+  natural and rendered width 602 (`<baseline>/scripts/phase5-f32.cjs`, screenshot
+  `<baseline>/phase5/f32-theming-1.png`). The other images listed below have their own width too: 667, 748, 1276,
+  1497 (`width` and a variant at that width); the concepts chart is held by its column, as before
 - Phase: 2
 - Repo and commit: htwoo `27ac7c18a` (theme `74bb212`), PD 0.9.0
 - Where: `website/pages/how-to/*.md` (screenshots), the `page` layout's slot `widths: [480, 960, 1440, 1920]`
@@ -873,9 +889,10 @@ them, and each needs its own fix in n8design/htwoo.
 
 ### F-39 [FORK-ONLY] The deploy workflow runs on the fork's branch
 
-- Status: open (`chore(fork)` commits dropped before the upstream PRs, Part 1 step 2). Since F-25's decision
-  (2026-11-27) only htwoo's is still in effect; the theme's add, fork and remove commits (`2ed2703`, `bfe8a38`,
-  `ab89060`) cancel out and can be dropped together.
+- Status: open. Decided 2026-11-27: the fork branches aren't rewritten or force-pushed (the `github-pages`
+  environment rule is keyed to `pd-migration`, and every deploy ran from it). The upstream branches are cut from
+  upstream's tips with the rehearsal's commits cherry-picked, leaving out htwoo's `bb859e339` and `ee6860fb0` and
+  the theme's `bfe8a38` with the pair that nets to nothing (`2ed2703`, `ab89060`); brief, Part 1 step 4
 - Phase: 4
 - Repo and commit: htwoo `ee6860fb0` (on `1f646d6b7`), theme `bfe8a38` (on `2ed2703`)
 - Where: htwoo `.github/workflows/deploy.yml` (`on.push.branches`); theme `.github/workflows/notify-htwoo.yml`
@@ -904,6 +921,10 @@ them, and each needs its own fix in n8design/htwoo.
 - Expected: no Hugo left (Acceptance 2).
 - Actual: only `hugo.yml` ran `docs:components`; the deploy workflow doesn't, because `/components/` is the
   frozen copy in `website/frozen/`. The script, its Hugo layouts and the tracked output stay unused.
+- Deployed: no. `docs/htwoo-components/` isn't mounted; `/htwoo-components/` is `website/frozen/htwoo-components/`
+  (three JS files); the deploy workflow doesn't run `docs:components`;
+  `https://stfbauer.github.io/htwoo/htwoo-components/layouts/components/list.html`, `…/single.html` and
+  `…/layouts/partials/component-styles.html` are 404 (checked 2026-11-27).
 - Proposed fix: in hTWOo, with the htwoo-core step: remove `docs:components`, its `hugo-layouts` and the
   tracked `docs/htwoo-components/`, when the kiosk replaces `/components/`.
 - Applies upstream: yes

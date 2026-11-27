@@ -901,6 +901,26 @@ line, Decisions line, Acceptance 9).
 
 - `docs(website): Write the phase 5 report`: this section, the findings' overview and the six statuses.
 
+### 5.3 After the report (Stefan, 2026-11-27)
+
+- **F-32 fixed in PD 0.10.0:** on the deployed site the 602 px screenshot shows at 602 (`width="602"`, the
+  `602w` variant loaded, natural and rendered 602; `<baseline>/scripts/phase5-f32.cjs`, screenshot
+  `<baseline>/phase5/f32-theming-1.png`); the other images F-32 lists have their own width too. `[PD-GAP]` now 5
+  fixed, 2 open.
+- **Acceptance 2:** reported as "green except F-40". The three Hugo layouts in `docs/htwoo-components/layouts/` are
+  not in the deployment (not mounted; the three paths 404 on the fork); F-40 says so.
+- **Upstream plan (brief, Part 1 step 4, rewritten):** the fork branches stay untouched as the record of the
+  rehearsal, not rebased or force-pushed (the `github-pages` environment rule is keyed to `pd-migration`, and
+  every deploy ran from it). Upstream work goes on new `pd-upstream` branches cut from upstream's tips, with the
+  rehearsal's commits cherry-picked (`-x`), the `chore(fork)` commits left out (F-39), and each theme pin
+  re-pointed to the theme commit's new SHA. This replaces "the fork commit moves to the tip once, right before the
+  upstream PR" (Phase 3 intro) and the "Part 1, step 4" pin note of 2.10.
+- **Acceptance 9 after the merge (brief, Part 1 step 4.7):** the first real pin bump is made by hand and its run
+  recorded; the first upstream pushes changing htwoo-core, htwoo-react and none of the filtered paths are recorded
+  as they come.
+- **Report:** the 18 open `[SUBJECT-DEBT]` findings go to htwoo-core as issues after the switch; not opened yet.
+- Log commit: `docs(website): Record the F-32 check and the upstream plan`.
+
 ## Appendix: baseline URL lists (Node 20 build at the base SHAs)
 
 Every live 200 URL is in this build (0.3). Route lists below; `/htwoo-core/`, `/htwoo-react/` and the
